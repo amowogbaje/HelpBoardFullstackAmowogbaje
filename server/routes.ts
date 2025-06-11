@@ -523,5 +523,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Serve widget.js for external embedding
+  app.get("/widget.js", (req, res) => {
+    res.setHeader("Content-Type", "application/javascript");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Cache-Control", "public, max-age=3600"); // Cache for 1 hour
+    res.sendFile("widget.js", { root: "./client/public" });
+  });
+
   return httpServer;
 }
