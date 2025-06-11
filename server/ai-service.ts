@@ -160,7 +160,8 @@ If escalation is needed, say: "I'd like to connect you with one of our specialis
     // Allow AI to respond even if agent is assigned (they can take over if needed)
     if (hasAssignedAgent && timeSinceLastMessage < 30000) return false; // Give agent 30s to respond
     
-    return this.settings.enableAutoResponse && timeSinceLastMessage >= this.settings.responseDelay;
+    // Always allow AI to respond for customer messages (90% automation goal)
+    return this.settings.enableAutoResponse;
   }
 
   // Training management methods

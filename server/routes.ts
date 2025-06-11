@@ -16,14 +16,30 @@ import { nanoid } from "nanoid";
 const sessions = new Map<string, { agentId: number; expiresAt: Date }>();
 
 // Middleware to check agent authentication
-function requireAuth(req: any, res: any, next: any) {
+async function requireAuth(req: any, res: any, next: any) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({ message: "Authorization required" });
   }
 
   const token = authHeader.slice(7);
-  const session = sessions.get(token);
+  let session = sessions.get(token);
+  
+  // If not in memory, check database
+  if (!session) {
+    try {
+      const dbSession = await storage.getSession(token);
+      if (dbSession && (!dbSession.expiresAt || dbSession.expiresAt > new Date())) {
+        session = { 
+          agentId: dbSession.agentId || 0, 
+          expiresAt: dbSession.expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000) 
+        };
+        sessions.set(token, session);
+      }
+    } catch (error) {
+      console.error("Error checking session:", error);
+    }
+  }
   
   if (!session || session.expiresAt < new Date()) {
     sessions.delete(token);
