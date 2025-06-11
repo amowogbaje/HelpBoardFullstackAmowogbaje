@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { getCurrentAgent } from "@/lib/auth";
 import { useWebSocket } from "@/hooks/use-websocket";
+import { useToast } from "@/hooks/use-toast";
 import { 
   User, 
   Headphones, 
@@ -66,6 +67,7 @@ export default function ChatArea({ conversationId }: ChatAreaProps) {
   const agent = getCurrentAgent();
   const queryClient = useQueryClient();
   const { sendMessage, sendTyping, typingUsers } = useWebSocket();
+  const { toast } = useToast();
 
   const { data: conversationData, isLoading, error } = useQuery<ConversationData>({
     queryKey: ["/api/conversations", conversationId],
@@ -147,6 +149,7 @@ export default function ChatArea({ conversationId }: ChatAreaProps) {
   useEffect(() => {
     const handleAgentTakeover = (event: any) => {
       if (event.detail.conversationId === conversationId) {
+        setAgentActiveMode(true);
         toast({
           title: "Agent Joined",
           description: "AI assistant will step aside while you handle this conversation",
@@ -258,6 +261,25 @@ export default function ChatArea({ conversationId }: ChatAreaProps) {
 
   return (
     <div className="flex-1 flex flex-col">
+      {/* Agent Takeover Status Bar */}
+      {agentActiveMode && (
+        <div className="px-4 py-2 bg-blue-50 border-b border-blue-200 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Headphones className="h-4 w-4 text-blue-600" />
+            <span className="text-sm font-medium text-blue-800">Agent Active Mode</span>
+            <span className="text-xs text-blue-600">AI assistant has stepped aside</span>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setAgentActiveMode(false)}
+            className="text-xs"
+          >
+            Resume AI Assistant
+          </Button>
+        </div>
+      )}
+      
       {/* Header */}
       <div className="p-4 border-b border-slate-200 bg-white">
         <div className="flex items-center justify-between">
