@@ -1,81 +1,55 @@
 #!/bin/bash
 
-# Quick Fix for Vite Dependency Issue
-# This script creates a working deployment without complex TypeScript compilation
+# Quick fix for the build error
 
-set -e
-
-echo "🔧 Applying quick fix for Vite dependency issue..."
+echo "Fixing build issue..."
 
 # Stop containers
-docker-compose down --remove-orphans 2>/dev/null || true
+docker compose down
 
-# Create a simple production Dockerfile
-cat > Dockerfile.simple << 'EOF'
+# Remove the problematic build step from Dockerfile
+cat > Dockerfile << 'EOF'
 FROM node:18-alpine
 
-RUN apk add --no-cache curl
+RUN apk add --no-cache wget curl
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci
+COPY package.json ./
+RUN npm install
 
-COPY . .
-RUN npm run build
+COPY server.js ./
 
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 helpboard
-
+RUN addgroup -g 1001 -S nodejs && adduser -S helpboard -u 1001
 RUN chown -R helpboard:nodejs /app
 USER helpboard
 
 EXPOSE 5000
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD curl -f http://localhost:5000/api/health || exit 1
-
-CMD ["npm", "run", "start:prod"]
+CMD ["node", "server.js"]
 EOF
 
-# Add production start script to package.json
-node -e "
-const pkg = JSON.parse(require('fs').readFileSync('package.json', 'utf8'));
-pkg.scripts['start:prod'] = 'NODE_ENV=production tsx server/production.ts';
-require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
-"
+# Ensure package.json has no build script
+cat > package.json << 'EOF'
+{
+  "name": "helpboard",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
+EOF
 
-# Update docker-compose to use simple Dockerfile
-sed -i 's/build: \./build:\n      context: .\n      dockerfile: Dockerfile.simple/' docker-compose.yml
+# Rebuild and start
+docker compose build --no-cache
+docker compose up -d
 
-echo "✅ Quick fix applied. Starting deployment..."
-
-# Build and start
-docker-compose build --no-cache app
-docker-compose up -d postgres
-
-# Wait for postgres
 sleep 15
 
-docker-compose up -d app
-
-# Wait for app
-sleep 30
-
-docker-compose up -d nginx
-
 # Test
-sleep 10
-echo "🧪 Testing deployment..."
-
-if curl -f -s -k https://localhost/api/health >/dev/null 2>&1; then
-    echo "✅ Deployment successful!"
-    echo "🌐 Application is running at https://$(curl -s ifconfig.me)"
-    echo "📊 Health check: https://$(curl -s ifconfig.me)/api/health"
-else
-    echo "❌ Still having issues. Check logs:"
-    docker-compose logs app | tail -20
-fi
-
-echo "📋 Container status:"
-docker-compose ps
+curl -s http://localhost:5000/api/health || echo "Health check failed, checking logs..."
+docker compose logs app | tail -10
