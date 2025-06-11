@@ -201,6 +201,122 @@ If escalation is needed, say: "I'd like to connect you with one of our specialis
     }
   }
 
+  async trainFromFile(fileContent: string, format: 'csv' | 'json' | 'txt'): Promise<{ success: number; errors: string[] }> {
+    const results = { success: 0, errors: [] as string[] };
+    
+    try {
+      if (format === 'csv') {
+        const lines = fileContent.split('\n').slice(1); // Skip header
+        for (const line of lines) {
+          const [question, answer, category] = line.split(',').map(s => s.trim().replace(/"/g, ''));
+          if (question && answer) {
+            this.addTrainingData(question, answer, category || 'file_import');
+            results.success++;
+          } else {
+            results.errors.push(`Invalid CSV line: ${line}`);
+          }
+        }
+      } else if (format === 'json') {
+        const data = JSON.parse(fileContent);
+        const entries = Array.isArray(data) ? data : [data];
+        for (const entry of entries) {
+          if (entry.question && entry.answer) {
+            this.addTrainingData(entry.question, entry.answer, entry.category || 'file_import', entry.context);
+            results.success++;
+          } else {
+            results.errors.push(`Invalid JSON entry: missing question or answer`);
+          }
+        }
+      } else if (format === 'txt') {
+        const lines = fileContent.split('\n');
+        for (let i = 0; i < lines.length - 1; i += 2) {
+          const question = lines[i]?.replace('Q:', '').trim();
+          const answer = lines[i + 1]?.replace('A:', '').trim();
+          if (question && answer) {
+            this.addTrainingData(question, answer, 'file_import');
+            results.success++;
+          }
+        }
+      }
+    } catch (error) {
+      results.errors.push(`File parsing error: ${error.message}`);
+    }
+    
+    return results;
+  }
+
+  async trainFromFAQ(faqData: Array<{ question: string; answer: string; category?: string }>): Promise<number> {
+    let count = 0;
+    for (const item of faqData) {
+      this.addTrainingData(item.question, item.answer, item.category || 'faq', 'FAQ knowledge base');
+      count++;
+    }
+    return count;
+  }
+
+  async trainFromKnowledgeBase(articles: Array<{ title: string; content: string; category?: string }>): Promise<number> {
+    let count = 0;
+    for (const article of articles) {
+      // Generate Q&A pairs from article content
+      const sentences = article.content.split('.').filter(s => s.trim().length > 20);
+      for (let i = 0; i < sentences.length; i++) {
+        const context = sentences.slice(Math.max(0, i - 1), i + 2).join('. ');
+        this.addTrainingData(
+          `What do you know about ${article.title}?`,
+          context,
+          article.category || 'knowledge_base',
+          `From article: ${article.title}`
+        );
+        count++;
+      }
+    }
+    return count;
+  }
+
+  async performBulkTraining(conversations: Array<{ customerMessages: string[]; agentResponses: string[] }>): Promise<number> {
+    let count = 0;
+    for (const conv of conversations) {
+      await this.trainFromConversation(count, conv.customerMessages, conv.agentResponses);
+      count += Math.min(conv.customerMessages.length, conv.agentResponses.length);
+    }
+    return count;
+  }
+
+  async optimizeTrainingData(): Promise<{ removed: number; optimized: number }> {
+    const originalCount = this.trainingData.length;
+    
+    // Remove duplicates
+    const uniqueData = this.trainingData.filter((item, index, arr) => 
+      arr.findIndex(t => t.question.toLowerCase() === item.question.toLowerCase()) === index
+    );
+    
+    // Remove low-quality entries (too short, repetitive, etc.)
+    const qualityData = uniqueData.filter(item => 
+      item.question.length > 10 && 
+      item.answer.length > 15 && 
+      !item.answer.toLowerCase().includes('i don\'t know')
+    );
+    
+    this.trainingData = qualityData;
+    
+    return {
+      removed: originalCount - qualityData.length,
+      optimized: qualityData.length
+    };
+  }
+
+  exportTrainingData(format: 'csv' | 'json'): string {
+    if (format === 'csv') {
+      const header = 'Question,Answer,Category,Context\n';
+      const rows = this.trainingData.map(item => 
+        `"${item.question}","${item.answer}","${item.category}","${item.context || ''}"`
+      ).join('\n');
+      return header + rows;
+    } else {
+      return JSON.stringify(this.trainingData, null, 2);
+    }
+  }
+
   // Settings management
   updateSettings(newSettings: Partial<AISettings>): void {
     this.settings = { ...this.settings, ...newSettings };

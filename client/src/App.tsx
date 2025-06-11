@@ -9,6 +9,7 @@ import Login from "@/pages/login";
 import Customers from "@/pages/customers";
 import Analytics from "@/pages/analytics";
 import AIAssistant from "@/pages/ai-assistant";
+import AITraining from "@/pages/ai-training";
 import NotFound from "@/pages/not-found";
 
 // Load auth from storage on app start

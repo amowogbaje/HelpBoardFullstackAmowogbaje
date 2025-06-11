@@ -406,19 +406,120 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/ai/retrain", requireAuth, async (req, res) => {
     try {
-      const { conversationId } = req.body;
+      // Get all conversations and retrain AI
+      const conversations = await storage.getConversations();
+      let trainedCount = 0;
       
-      // In a real implementation, this would retrain the AI model
-      // For now, we'll just return current stats
-      const stats = aiService.getStats();
+      for (const conv of conversations) {
+        const messages = await storage.getMessagesByConversation(conv.id);
+        const customerMessages = messages.filter(m => m.senderType === 'customer').map(m => m.content);
+        const agentMessages = messages.filter(m => m.senderType === 'agent' && m.senderId !== -1).map(m => m.content);
+        
+        if (customerMessages.length > 0 && agentMessages.length > 0) {
+          await aiService.trainFromConversation(conv.id, customerMessages, agentMessages);
+          trainedCount++;
+        }
+      }
       
-      res.json({
-        message: `AI retrained with ${conversationId ? "1 conversation" : "all conversations"}`,
-        stats,
-      });
+      res.json({ message: `AI retrained with ${trainedCount} conversations`, trainedCount });
     } catch (error) {
-      console.error("AI retrain error:", error);
-      res.status(500).json({ message: "Internal server error" });
+      console.error("Retrain error:", error);
+      res.status(500).json({ error: "Failed to retrain AI" });
+    }
+  });
+
+  // File-based training
+  app.post("/api/ai/train/file", requireAuth, async (req, res) => {
+    try {
+      const { content, format } = req.body;
+      if (!content || !format) {
+        return res.status(400).json({ error: "Content and format are required" });
+      }
+      
+      const result = await aiService.trainFromFile(content, format);
+      res.json(result);
+    } catch (error) {
+      console.error("File training error:", error);
+      res.status(500).json({ error: "Failed to train from file" });
+    }
+  });
+
+  // FAQ training
+  app.post("/api/ai/train/faq", requireAuth, async (req, res) => {
+    try {
+      const { faqData } = req.body;
+      if (!Array.isArray(faqData)) {
+        return res.status(400).json({ error: "FAQ data must be an array" });
+      }
+      
+      const count = await aiService.trainFromFAQ(faqData);
+      res.json({ message: `Added ${count} FAQ entries`, count });
+    } catch (error) {
+      console.error("FAQ training error:", error);
+      res.status(500).json({ error: "Failed to train from FAQ" });
+    }
+  });
+
+  // Knowledge base training
+  app.post("/api/ai/train/knowledge-base", requireAuth, async (req, res) => {
+    try {
+      const { articles } = req.body;
+      if (!Array.isArray(articles)) {
+        return res.status(400).json({ error: "Articles must be an array" });
+      }
+      
+      const count = await aiService.trainFromKnowledgeBase(articles);
+      res.json({ message: `Added ${count} knowledge base entries`, count });
+    } catch (error) {
+      console.error("Knowledge base training error:", error);
+      res.status(500).json({ error: "Failed to train from knowledge base" });
+    }
+  });
+
+  // Bulk conversation training
+  app.post("/api/ai/train/bulk", requireAuth, async (req, res) => {
+    try {
+      const { conversations } = req.body;
+      if (!Array.isArray(conversations)) {
+        return res.status(400).json({ error: "Conversations must be an array" });
+      }
+      
+      const count = await aiService.performBulkTraining(conversations);
+      res.json({ message: `Bulk trained ${count} conversation pairs`, count });
+    } catch (error) {
+      console.error("Bulk training error:", error);
+      res.status(500).json({ error: "Failed to perform bulk training" });
+    }
+  });
+
+  // Optimize training data
+  app.post("/api/ai/optimize", requireAuth, async (req, res) => {
+    try {
+      const result = await aiService.optimizeTrainingData();
+      res.json(result);
+    } catch (error) {
+      console.error("Optimization error:", error);
+      res.status(500).json({ error: "Failed to optimize training data" });
+    }
+  });
+
+  // Export training data
+  app.get("/api/ai/export/:format", requireAuth, async (req, res) => {
+    try {
+      const { format } = req.params;
+      if (format !== 'csv' && format !== 'json') {
+        return res.status(400).json({ error: "Format must be csv or json" });
+      }
+      
+      const data = aiService.exportTrainingData(format);
+      const filename = `training-data-${Date.now()}.${format}`;
+      
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Type', format === 'csv' ? 'text/csv' : 'application/json');
+      res.send(data);
+    } catch (error) {
+      console.error("Export error:", error);
+      res.status(500).json({ error: "Failed to export training data" });
     }
   });
 
