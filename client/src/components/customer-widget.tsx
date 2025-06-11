@@ -77,6 +77,20 @@ export default function CustomerWidget({
 
   const initializeSession = async () => {
     try {
+      // Get geolocation data for enhanced customer identification
+      let locationData = {};
+      try {
+        const geoResponse = await fetch('https://ipapi.co/json/');
+        const geoData = await geoResponse.json();
+        locationData = {
+          country: geoData.country_name,
+          city: geoData.city,
+          region: geoData.region,
+        };
+      } catch (error) {
+        console.log('Location detection unavailable');
+      }
+
       const response = await fetch(`${apiUrl}/api/initiate`, {
         method: "POST",
         headers: {
@@ -90,6 +104,7 @@ export default function CustomerWidget({
           pageTitle: document.title,
           referrer: document.referrer,
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          ...locationData,
         }),
       });
 
