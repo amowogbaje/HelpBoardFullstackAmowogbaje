@@ -10,6 +10,7 @@ import Customers from "@/pages/customers";
 import Analytics from "@/pages/analytics";
 import AIAssistant from "@/pages/ai-assistant";
 import AITraining from "@/pages/ai-training";
+import WidgetGuides from "@/pages/widget-guides";
 import NotFound from "@/pages/not-found";
 
 // Load auth from storage on app start
@@ -30,6 +31,9 @@ function Router() {
       </Route>
       <Route path="/ai-training">
         {() => isAuthenticated() ? <AITraining /> : <Redirect to="/login" />}
+      </Route>
+      <Route path="/widget-guides">
+        {() => isAuthenticated() ? <WidgetGuides /> : <Redirect to="/login" />}
       </Route>
       <Route path="/analytics">
         {() => isAuthenticated() ? <Analytics /> : <Redirect to="/login" />}
