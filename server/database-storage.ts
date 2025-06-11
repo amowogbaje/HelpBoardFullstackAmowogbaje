@@ -226,10 +226,23 @@ export class DatabaseStorage implements IStorage {
       .where(eq(messages.conversationId, id))
       .orderBy(messages.createdAt);
 
-    const messagesWithSender = messagesData.map(row => ({
-      ...row.message,
-      sender: row.customer || row.agent || undefined,
-    }));
+    const messagesWithSender = messagesData.map(row => {
+      let sender = row.customer || row.agent || undefined;
+      
+      // Handle AI messages (senderId: -1)
+      if (row.message.senderId === -1 && row.message.senderType === "agent") {
+        sender = {
+          id: -1,
+          name: "HelpBoard AI Assistant",
+          email: "ai@helpboard.com",
+        };
+      }
+      
+      return {
+        ...row.message,
+        sender,
+      };
+    });
 
     return {
       ...conversationData.conversation,

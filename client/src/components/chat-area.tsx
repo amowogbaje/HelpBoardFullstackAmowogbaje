@@ -210,7 +210,7 @@ export default function ChatArea({ conversationId }: ChatAreaProps) {
     );
   }
 
-  if (!conversationData) {
+  if (!conversationData || !conversationData.customer || !conversationData.conversation) {
     return (
       <div className="flex-1 flex items-center justify-center bg-slate-50">
         <div className="text-slate-500">Conversation not found</div>
@@ -218,7 +218,7 @@ export default function ChatArea({ conversationId }: ChatAreaProps) {
     );
   }
 
-  const { conversation, customer, messages } = conversationData;
+  const { conversation, customer, messages = [] } = conversationData;
 
   return (
     <div className="flex-1 flex flex-col">
