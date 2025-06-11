@@ -1,11 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(express.json());
@@ -52,20 +47,13 @@ app.use((req, res, next) => {
     res.status(status).json({ message });
   });
 
-  // Setup static file serving based on environment
-  if (process.env.NODE_ENV === "development") {
+  // importantly only setup vite in development and after
+  // setting up all the other routes so the catch-all route
+  // doesn't interfere with the other routes
+  if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
-    // Production: serve built static files
-    const distPath = path.join(__dirname, "../dist/client");
-    app.use(express.static(distPath));
-    
-    // Serve index.html for all non-API routes (SPA fallback)
-    app.get("*", (req, res) => {
-      if (!req.path.startsWith("/api")) {
-        res.sendFile(path.join(distPath, "index.html"));
-      }
-    });
+    serveStatic(app);
   }
 
   // ALWAYS serve the app on port 5000

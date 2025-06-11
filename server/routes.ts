@@ -65,15 +65,6 @@ function getClientIP(req: any): string {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Health check endpoint for monitoring
-  app.get("/api/health", (req, res) => {
-    res.status(200).json({
-      status: "healthy",
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      version: "1.0.0"
-    });
-  });
   const httpServer = createServer(app);
   
   // Initialize WebSocket
