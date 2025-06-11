@@ -1,0 +1,31 @@
+ompose can now delegate builds to bake for better performance.
+ To do so, set COMPOSE_BAKE=true.
+[+] Building 7.5s (14/14) FINISHED                                                                   docker:default
+ => [app internal] load build definition from Dockerfile                                                       0.0s
+ => => transferring dockerfile: 318B                                                                           0.0s
+ => [app internal] load metadata for docker.io/library/node:18-alpine                                          0.1s
+ => [app internal] load .dockerignore                                                                          0.0s
+ => => transferring context: 391B                                                                              0.0s
+ => CACHED [app 1/8] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d11894558  0.0s
+ => [app internal] load build context                                                                          0.0s
+ => => transferring context: 1.98kB                                                                            0.0s
+ => [app 2/8] RUN apk add --no-cache wget curl                                                                 1.2s
+ => [app 3/8] WORKDIR /app                                                                                     0.0s 
+ => [app 4/8] COPY package.json ./                                                                             0.0s 
+ => [app 5/8] RUN npm install                                                                                  5.0s 
+ => [app 6/8] COPY server.js ./                                                                                0.0s 
+ => [app 7/8] RUN addgroup -g 1001 -S nodejs && adduser -S helpboard -u 1001                                   0.2s 
+ => [app 8/8] RUN chown -R helpboard:nodejs /app                                                               0.6s 
+ => [app] exporting to image                                                                                   0.3s
+ => => exporting layers                                                                                        0.3s
+ => => writing image sha256:e702d1934cb36f983f120c17fdf1f580a2e4b2b7fb1d9e636a2c42a486fd7407                   0.0s
+ => => naming to docker.io/library/helpboard-app                                                               0.0s
+ => [app] resolving provenance for metadata file                                                               0.0s
+[+] Building 1/1
+ ✔ app  Built                                                                                                  0.0s 
+[+] Running 3/3
+ ✔ Container helpboard-postgres-1  Healthy                                                                    10.7s 
+ ✔ Container helpboard-app-1       Started                                                                    10.8s 
+ ✔ Container helpboard-nginx-1     Started                                                                     0.0s 
+curl: (7) Failed to connect to localhost port 5000 after 0 ms: Could not connect to server
+root@helpboard-production:/opt/helpboard# 
