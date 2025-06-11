@@ -28,6 +28,9 @@ function Router() {
       <Route path="/ai">
         {() => isAuthenticated() ? <AIAssistant /> : <Redirect to="/login" />}
       </Route>
+      <Route path="/ai-training">
+        {() => isAuthenticated() ? <AITraining /> : <Redirect to="/login" />}
+      </Route>
       <Route path="/analytics">
         {() => isAuthenticated() ? <Analytics /> : <Redirect to="/login" />}
       </Route>

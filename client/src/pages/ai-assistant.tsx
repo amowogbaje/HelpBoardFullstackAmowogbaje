@@ -200,14 +200,24 @@ export default function AIAssistant() {
                 Train and configure your AI assistant to handle 90% of customer support
               </p>
             </div>
-            <Button
-              onClick={() => retrainMutation.mutate()}
-              disabled={retrainMutation.isPending}
-              className="bg-primary hover:bg-primary/90"
-            >
-              <Brain className="h-4 w-4 mr-2" />
-              {retrainMutation.isPending ? "Retraining..." : "Retrain AI"}
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => retrainMutation.mutate()}
+                disabled={retrainMutation.isPending}
+                className="bg-primary hover:bg-primary/90"
+              >
+                <Brain className="h-4 w-4 mr-2" />
+                {retrainMutation.isPending ? "Retraining..." : "Retrain AI"}
+              </Button>
+              <Button
+                onClick={() => window.location.href = "/ai-training"}
+                variant="outline"
+                className="border-primary text-primary hover:bg-primary/10"
+              >
+                <Zap className="h-4 w-4 mr-2" />
+                Advanced Training
+              </Button>
+            </div>
           </div>
 
           {/* Stats Cards */}

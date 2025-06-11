@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { getCurrentAgent, logout } from "@/lib/auth";
 import { useLocation } from "wouter";
-import { MessageCircle, Users, Bot, BarChart3, Settings, Power, Headphones } from "lucide-react";
+import { MessageCircle, Users, Bot, BarChart3, Settings, Power, Headphones, Brain } from "lucide-react";
 
 export default function Sidebar() {
   const [location, setLocation] = useLocation();
@@ -23,6 +23,7 @@ export default function Sidebar() {
     { icon: MessageCircle, label: "Conversations", path: "/", badge: "3" },
     { icon: Users, label: "Customers", path: "/customers" },
     { icon: Bot, label: "AI Assistant", path: "/ai" },
+    { icon: Brain, label: "AI Training", path: "/ai-training" },
     { icon: BarChart3, label: "Analytics", path: "/analytics" },
     { icon: Settings, label: "Settings", path: "/settings" },
   ];
