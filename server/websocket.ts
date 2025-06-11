@@ -403,22 +403,28 @@ export class WebSocketService {
   }
 
   private broadcastToConversation(conversationId: number, message: any, excludeWs?: WebSocket): void {
-    for (const [ws, client] of this.clients.entries()) {
-      if (ws === excludeWs) continue;
-      
-      // Send to agents (they can see all conversations)
-      if (client.agentId) {
-        this.send(ws, message);
+    try {
+      for (const [ws, client] of this.clients.entries()) {
+        if (ws === excludeWs) continue;
+        
+        // Send to agents (they can see all conversations)
+        if (client.agentId) {
+          this.send(ws, message);
+        }
+        // Send to customers only if they're in this conversation
+        else if (client.customerId) {
+          // Check if customer is in this conversation
+          storage.getConversation(conversationId).then(conversation => {
+            if (conversation && conversation.customerId === client.customerId) {
+              this.send(ws, message);
+            }
+          }).catch(error => {
+            console.error("Error checking conversation for customer:", error);
+          });
+        }
       }
-      // Send to customers only if they're in this conversation
-      else if (client.customerId) {
-        // Check if customer is in this conversation
-        storage.getConversation(conversationId).then(conversation => {
-          if (conversation && conversation.customerId === client.customerId) {
-            this.send(ws, message);
-          }
-        });
-      }
+    } catch (error) {
+      console.error("Error broadcasting to conversation:", error);
     }
   }
 

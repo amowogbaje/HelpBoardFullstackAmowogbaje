@@ -81,10 +81,7 @@ export default function ChatArea({ conversationId }: ChatAreaProps) {
     enabled: !!conversationId,
   });
 
-  console.log("ChatArea - conversationId:", conversationId);
-  console.log("ChatArea - isLoading:", isLoading);
-  console.log("ChatArea - conversationData:", conversationData);
-  console.log("ChatArea - error:", error);
+  // Debug logging removed for production
 
   const assignConversationMutation = useMutation({
     mutationFn: async (agentId: number) => {
@@ -146,11 +143,18 @@ export default function ChatArea({ conversationId }: ChatAreaProps) {
   }, [isTyping, conversationId, sendTyping]);
 
   const handleSendMessage = () => {
-    if (!messageText.trim() || !conversationId) return;
+    if (!messageText.trim() || !conversationId || !agent) return;
 
+    console.log("Sending agent message:", messageText);
     sendMessage(conversationId, messageText);
     setMessageText("");
     setIsTyping(false);
+    
+    // Refresh conversation data after sending
+    setTimeout(() => {
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations", conversationId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
+    }, 500);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

@@ -50,7 +50,6 @@ export default function Dashboard() {
   }, [setLocation]);
 
   const handleConversationSelect = (conversation: Conversation) => {
-    console.log("Selecting conversation:", conversation);
     setSelectedConversation(conversation);
   };
 

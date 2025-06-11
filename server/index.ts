@@ -61,18 +61,36 @@ app.use((req, res, next) => {
   // It is the only port that is not firewalled.
   const port = 5000;
   
+  // Graceful error handling and process management
+  process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+    process.exit(1);
+  });
+
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  });
+
+  process.on('SIGTERM', () => {
+    console.log('SIGTERM received, shutting down gracefully');
+    server.close(() => {
+      process.exit(0);
+    });
+  });
+
+  process.on('SIGINT', () => {
+    console.log('SIGINT received, shutting down gracefully');
+    server.close(() => {
+      process.exit(0);
+    });
+  });
+
   server.on('error', (err: any) => {
     console.error('Server error:', err);
     if (err.code === 'EADDRINUSE') {
-      console.error(`Port ${port} is already in use. Retrying in 5 seconds...`);
-      setTimeout(() => {
-        server.close();
-        server.listen({
-          port,
-          host: "0.0.0.0",
-          reusePort: true,
-        });
-      }, 5000);
+      console.error(`Port ${port} is already in use. Attempting graceful recovery...`);
+      // Don't try to restart automatically, let the process exit cleanly
+      process.exit(1);
     }
   });
 
