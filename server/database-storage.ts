@@ -235,6 +235,9 @@ export class DatabaseStorage implements IStorage {
           id: -1,
           name: "HelpBoard AI Assistant",
           email: "ai@helpboard.com",
+          password: "",
+          isAvailable: null,
+          createdAt: null,
         };
       }
       

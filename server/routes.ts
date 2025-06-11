@@ -217,13 +217,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/conversations/:id", requireAuth, async (req, res) => {
     try {
       const conversationId = parseInt(req.params.id);
+      console.log("Fetching conversation:", conversationId);
+      
       const conversationData = await storage.getConversation(conversationId);
+      console.log("Conversation data:", conversationData ? "found" : "not found");
       
       if (!conversationData) {
         return res.status(404).json({ message: "Conversation not found" });
       }
 
       const { messages, customer, ...conversation } = conversationData;
+      
+      console.log("Returning conversation with", messages?.length || 0, "messages");
       
       res.json({
         conversation,

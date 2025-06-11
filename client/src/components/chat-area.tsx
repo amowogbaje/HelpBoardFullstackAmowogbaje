@@ -66,10 +66,15 @@ export default function ChatArea({ conversationId }: ChatAreaProps) {
   const queryClient = useQueryClient();
   const { sendMessage, sendTyping, typingUsers } = useWebSocket();
 
-  const { data: conversationData, isLoading } = useQuery<ConversationData>({
+  const { data: conversationData, isLoading, error } = useQuery<ConversationData>({
     queryKey: ["/api/conversations", conversationId],
     enabled: !!conversationId,
   });
+
+  console.log("ChatArea - conversationId:", conversationId);
+  console.log("ChatArea - isLoading:", isLoading);
+  console.log("ChatArea - conversationData:", conversationData);
+  console.log("ChatArea - error:", error);
 
   const assignConversationMutation = useMutation({
     mutationFn: async (agentId: number) => {
