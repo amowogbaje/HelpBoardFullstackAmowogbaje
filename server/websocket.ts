@@ -193,6 +193,7 @@ export class WebSocketService {
 
       // Check if AI should respond
       if (senderType === "customer") {
+        console.log(`Customer message received: "${content}" - checking AI response`);
         await this.checkAIResponse(conversationId, content);
       }
 
@@ -285,17 +286,25 @@ export class WebSocketService {
 
   private async checkAIResponse(conversationId: number, customerMessage: string): Promise<void> {
     try {
+      console.log(`Checking AI response for conversation ${conversationId}`);
       const conversation = await storage.getConversation(conversationId);
-      if (!conversation) return;
+      if (!conversation) {
+        console.log(`No conversation found for ID ${conversationId}`);
+        return;
+      }
 
       const hasAssignedAgent = conversation.assignedAgentId !== null;
-      const timeSinceLastMessage = Date.now() - conversation.updatedAt.getTime();
+      const timeSinceLastMessage = conversation.updatedAt ? Date.now() - conversation.updatedAt.getTime() : 0;
+
+      console.log(`Conversation status: ${conversation.status}, hasAssignedAgent: ${hasAssignedAgent}, timeSinceLastMessage: ${timeSinceLastMessage}`);
 
       const shouldRespond = await aiService.shouldAIRespond(
         conversation.status,
         hasAssignedAgent,
         timeSinceLastMessage
       );
+
+      console.log(`AI should respond: ${shouldRespond}`);
 
       if (shouldRespond) {
         // Show AI typing indicator immediately

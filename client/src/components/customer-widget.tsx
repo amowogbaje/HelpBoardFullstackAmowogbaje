@@ -181,25 +181,17 @@ export default function CustomerWidget({
   const sendMessage = async () => {
     if (!inputValue.trim() || !sessionId || !conversationId) return;
 
-    const newMessage: Message = {
-      id: Date.now(),
-      content: inputValue,
-      isAgent: false,
-      timestamp: new Date(),
-    };
-
-    setMessages(prev => [...prev, newMessage]);
+    const messageContent = inputValue;
+    setInputValue(""); // Clear input immediately to prevent double-sending
     
-    // Send via WebSocket if connected
+    // Send via WebSocket - the message will be added to the list when it comes back from server
     if (wsRef.current && wsRef.current.isConnected()) {
       wsRef.current.send({
         type: "message",
         conversationId: conversationId,
-        content: inputValue
+        content: messageContent
       });
     }
-    
-    setInputValue("");
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
