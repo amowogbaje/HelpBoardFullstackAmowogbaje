@@ -43,8 +43,8 @@ app.use((req, res, next) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
+    console.error("Server error:", err);
     res.status(status).json({ message });
-    throw err;
   });
 
   // importantly only setup vite in development and after
@@ -60,6 +60,22 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = 5000;
+  
+  server.on('error', (err: any) => {
+    console.error('Server error:', err);
+    if (err.code === 'EADDRINUSE') {
+      console.error(`Port ${port} is already in use. Retrying in 5 seconds...`);
+      setTimeout(() => {
+        server.close();
+        server.listen({
+          port,
+          host: "0.0.0.0",
+          reusePort: true,
+        });
+      }, 5000);
+    }
+  });
+
   server.listen({
     port,
     host: "0.0.0.0",

@@ -45,6 +45,14 @@ export default function ConversationList({ selectedConversationId, onConversatio
     refetchInterval: 5000, // Refresh every 5 seconds
   });
 
+  // Auto-select first conversation if none selected
+  useEffect(() => {
+    if (conversations.length > 0 && !selectedConversationId) {
+      console.log("Auto-selecting first conversation:", conversations[0]);
+      onConversationSelect(conversations[0]);
+    }
+  }, [conversations, selectedConversationId, onConversationSelect]);
+
   // Listen for conversation updates from WebSocket
   useEffect(() => {
     const handleConversationUpdate = () => {

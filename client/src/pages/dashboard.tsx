@@ -70,7 +70,10 @@ export default function Dashboard() {
         
         <ChatArea conversationId={selectedConversation?.id || null} />
         
-        <CustomerInfo customer={selectedConversation?.customer || null} />
+        <CustomerInfo customer={selectedConversation?.customer ? {
+          ...selectedConversation.customer,
+          createdAt: new Date().toISOString()
+        } : null} />
       </div>
 
       {/* Customer Widget for testing */}
