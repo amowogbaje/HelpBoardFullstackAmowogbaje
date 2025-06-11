@@ -319,45 +319,62 @@ export class WebSocketService {
 
         // Generate AI response with typing simulation
         setTimeout(async () => {
-          const aiResponse = await aiService.generateResponse(
-            conversationId,
-            customerMessage,
-            conversation.customer.name || undefined,
-            conversation.customer
-          );
+          try {
+            console.log("Generating AI response...");
+            const aiResponse = await aiService.generateResponse(
+              conversationId,
+              customerMessage,
+              conversation.customer.name || undefined,
+              conversation.customer
+            );
+            console.log("AI response generated:", aiResponse);
 
-          // Stop typing indicator
-          this.broadcastToConversation(conversationId, {
-            type: "typing",
-            conversationId,
-            isTyping: false,
-            senderId: -1,
-            senderType: "agent",
-            senderName: "HelpBoard AI Assistant"
-          });
+            // Stop typing indicator
+            this.broadcastToConversation(conversationId, {
+              type: "typing",
+              conversationId,
+              isTyping: false,
+              senderId: -1,
+              senderType: "agent",
+              senderName: "HelpBoard AI Assistant"
+            });
 
-          // Send AI message
-          const aiMessage = await storage.createMessage({
-            conversationId,
-            senderId: -1, // Special AI agent ID
-            senderType: "agent",
-            content: aiResponse,
-          });
+            // Send AI message
+            const aiMessage = await storage.createMessage({
+              conversationId,
+              senderId: -1, // Special AI agent ID
+              senderType: "agent",
+              content: aiResponse,
+            });
 
-          const messageWithSender = {
-            ...aiMessage,
-            sender: {
-              id: -1,
-              name: "HelpBoard AI Assistant",
-              email: "ai@helpboard.com",
-            },
-          };
+            const messageWithSender = {
+              ...aiMessage,
+              sender: {
+                id: -1,
+                name: "HelpBoard AI Assistant",
+                email: "ai@helpboard.com",
+              },
+            };
 
-          this.broadcastToConversation(conversationId, {
-            type: "new_message",
-            message: messageWithSender,
-            conversationId,
-          });
+            this.broadcastToConversation(conversationId, {
+              type: "new_message",
+              message: messageWithSender,
+              conversationId,
+            });
+
+            console.log("AI response sent successfully");
+          } catch (error) {
+            console.error("Error generating AI response:", error);
+            
+            // Stop typing indicator on error
+            this.broadcastToConversation(conversationId, {
+              type: "typing",
+              conversationId,
+              isTyping: false,
+              senderId: -1,
+              senderType: "agent"
+            });
+          }
         }, Math.random() * 2000 + 1000); // Random delay 1-3 seconds for natural feel
       }
     } catch (error) {
