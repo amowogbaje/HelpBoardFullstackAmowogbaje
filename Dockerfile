@@ -1,19 +1,15 @@
-# Multi-stage build for production optimization
-FROM node:18-alpine AS base
+FROM node:18-alpine
 
-# Install dependencies only when needed
-FROM base AS deps
+# Install curl for health checks and other utilities
+RUN apk add --no-cache curl
+
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
 
-# Build the application
-FROM base AS builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
+# Install dependencies
+RUN npm ci --only=production && npm cache clean --force
 
 # Copy source code
 COPY . .
@@ -21,18 +17,12 @@ COPY . .
 # Build the application
 RUN npm run build
 
-# Production image
-FROM base AS runner
-WORKDIR /app
-
 # Create non-root user for security
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 helpboard
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 helpboard
 
-# Copy built application
-COPY --from=deps --chown=helpboard:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=helpboard:nodejs /app/dist ./dist
-COPY --from=builder --chown=helpboard:nodejs /app/package*.json ./
+# Change ownership of app directory
+RUN chown -R helpboard:nodejs /app
 
 # Switch to non-root user
 USER helpboard
