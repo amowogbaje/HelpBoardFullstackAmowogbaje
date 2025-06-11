@@ -8,14 +8,17 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production && npm cache clean --force
+# Install ALL dependencies (including dev dependencies for build)
+RUN npm ci && npm cache clean --force
 
 # Copy source code
 COPY . .
 
 # Build the application
 RUN npm run build
+
+# Remove dev dependencies after build (keep only production dependencies)
+RUN npm ci --only=production && npm cache clean --force
 
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs && \

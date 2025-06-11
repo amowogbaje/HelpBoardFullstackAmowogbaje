@@ -1,0 +1,248 @@
+WARN[0000] /opt/helpboard/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+app-1  | 
+app-1  | > rest-express@1.0.0 start
+app-1  | > NODE_ENV=production node dist/index.js
+app-1  | 
+app-1  | node:internal/errors:496
+app-1  |     ErrorCaptureStackTrace(err);
+app-1  |     ^
+app-1  | 
+app-1  | Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'vite' imported from /app/dist/index.js
+app-1  |     at new NodeError (node:internal/errors:405:5)
+app-1  |     at packageResolve (node:internal/modules/esm/resolve:916:9)
+app-1  |     at moduleResolve (node:internal/modules/esm/resolve:973:20)
+app-1  |     at defaultResolve (node:internal/modules/esm/resolve:1206:11)
+app-1  |     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:404:12)
+app-1  |     at ModuleLoader.resolve (node:internal/modules/esm/loader:373:25)
+app-1  |     at ModuleLoader.getModuleJob (node:internal/modules/esm/loader:250:38)
+app-1  |     at ModuleWrap.<anonymous> (node:internal/modules/esm/module_job:76:39)
+app-1  |     at link (node:internal/modules/esm/module_job:75:36) {
+app-1  |   code: 'ERR_MODULE_NOT_FOUND'
+app-1  | }
+app-1  | 
+app-1  | Node.js v18.20.8
+app-1  | npm notice
+app-1  | npm notice New major version of npm available! 10.8.2 -> 11.4.1
+app-1  | npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.4.1
+app-1  | npm notice To update run: npm install -g npm@11.4.1
+app-1  | npm notice
+app-1  | 
+app-1  | > rest-express@1.0.0 start
+app-1  | > NODE_ENV=production node dist/index.js
+app-1  | 
+app-1  | node:internal/errors:496
+app-1  |     ErrorCaptureStackTrace(err);
+app-1  |     ^
+app-1  | 
+app-1  | Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'vite' imported from /app/dist/index.js
+app-1  |     at new NodeError (node:internal/errors:405:5)
+app-1  |     at packageResolve (node:internal/modules/esm/resolve:916:9)
+app-1  |     at moduleResolve (node:internal/modules/esm/resolve:973:20)
+app-1  |     at defaultResolve (node:internal/modules/esm/resolve:1206:11)
+app-1  |     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:404:12)
+app-1  |     at ModuleLoader.resolve (node:internal/modules/esm/loader:373:25)
+app-1  |     at ModuleLoader.getModuleJob (node:internal/modules/esm/loader:250:38)
+app-1  |     at ModuleWrap.<anonymous> (node:internal/modules/esm/module_job:76:39)
+app-1  |     at link (node:internal/modules/esm/module_job:75:36) {
+app-1  |   code: 'ERR_MODULE_NOT_FOUND'
+app-1  | }
+app-1  | 
+app-1  | Node.js v18.20.8
+app-1  | 
+app-1  | > rest-express@1.0.0 start
+app-1  | > NODE_ENV=production node dist/index.js
+app-1  | 
+app-1  | node:internal/errors:496
+app-1  |     ErrorCaptureStackTrace(err);
+app-1  |     ^
+app-1  | 
+app-1  | Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'vite' imported from /app/dist/index.js
+app-1  |     at new NodeError (node:internal/errors:405:5)
+app-1  |     at packageResolve (node:internal/modules/esm/resolve:916:9)
+app-1  |     at moduleResolve (node:internal/modules/esm/resolve:973:20)
+app-1  |     at defaultResolve (node:internal/modules/esm/resolve:1206:11)
+app-1  |     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:404:12)
+app-1  |     at ModuleLoader.resolve (node:internal/modules/esm/loader:373:25)
+app-1  |     at ModuleLoader.getModuleJob (node:internal/modules/esm/loader:250:38)
+app-1  |     at ModuleWrap.<anonymous> (node:internal/modules/esm/module_job:76:39)
+app-1  |     at link (node:internal/modules/esm/module_job:75:36) {
+app-1  |   code: 'ERR_MODULE_NOT_FOUND'
+app-1  | }
+app-1  | 
+app-1  | Node.js v18.20.8
+app-1  | 
+app-1  | > rest-express@1.0.0 start
+app-1  | > NODE_ENV=production node dist/index.js
+app-1  | 
+app-1  | node:internal/errors:496
+app-1  |     ErrorCaptureStackTrace(err);
+app-1  |     ^
+app-1  | 
+app-1  | Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'vite' imported from /app/dist/index.js
+app-1  |     at new NodeError (node:internal/errors:405:5)
+app-1  |     at packageResolve (node:internal/modules/esm/resolve:916:9)
+app-1  |     at moduleResolve (node:internal/modules/esm/resolve:973:20)
+app-1  |     at defaultResolve (node:internal/modules/esm/resolve:1206:11)
+app-1  |     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:404:12)
+app-1  |     at ModuleLoader.resolve (node:internal/modules/esm/loader:373:25)
+app-1  |     at ModuleLoader.getModuleJob (node:internal/modules/esm/loader:250:38)
+app-1  |     at ModuleWrap.<anonymous> (node:internal/modules/esm/module_job:76:39)
+app-1  |     at link (node:internal/modules/esm/module_job:75:36) {
+app-1  |   code: 'ERR_MODULE_NOT_FOUND'
+app-1  | }
+app-1  | 
+app-1  | Node.js v18.20.8
+app-1  | 
+app-1  | > rest-express@1.0.0 start
+app-1  | > NODE_ENV=production node dist/index.js
+app-1  | 
+app-1  | node:internal/errors:496
+app-1  |     ErrorCaptureStackTrace(err);
+app-1  |     ^
+app-1  | 
+app-1  | Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'vite' imported from /app/dist/index.js
+app-1  |     at new NodeError (node:internal/errors:405:5)
+app-1  |     at packageResolve (node:internal/modules/esm/resolve:916:9)
+app-1  |     at moduleResolve (node:internal/modules/esm/resolve:973:20)
+app-1  |     at defaultResolve (node:internal/modules/esm/resolve:1206:11)
+app-1  |     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:404:12)
+app-1  |     at ModuleLoader.resolve (node:internal/modules/esm/loader:373:25)
+app-1  |     at ModuleLoader.getModuleJob (node:internal/modules/esm/loader:250:38)
+app-1  |     at ModuleWrap.<anonymous> (node:internal/modules/esm/module_job:76:39)
+app-1  |     at link (node:internal/modules/esm/module_job:75:36) {
+app-1  |   code: 'ERR_MODULE_NOT_FOUND'
+app-1  | }
+app-1  | 
+app-1  | Node.js v18.20.8
+app-1  | 
+app-1  | > rest-express@1.0.0 start
+app-1  | > NODE_ENV=production node dist/index.js
+app-1  | 
+app-1  | node:internal/errors:496
+app-1  |     ErrorCaptureStackTrace(err);
+app-1  |     ^
+app-1  | 
+app-1  | Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'vite' imported from /app/dist/index.js
+app-1  |     at new NodeError (node:internal/errors:405:5)
+app-1  |     at packageResolve (node:internal/modules/esm/resolve:916:9)
+app-1  |     at moduleResolve (node:internal/modules/esm/resolve:973:20)
+app-1  |     at defaultResolve (node:internal/modules/esm/resolve:1206:11)
+app-1  |     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:404:12)
+app-1  |     at ModuleLoader.resolve (node:internal/modules/esm/loader:373:25)
+app-1  |     at ModuleLoader.getModuleJob (node:internal/modules/esm/loader:250:38)
+app-1  |     at ModuleWrap.<anonymous> (node:internal/modules/esm/module_job:76:39)
+app-1  |     at link (node:internal/modules/esm/module_job:75:36) {
+app-1  |   code: 'ERR_MODULE_NOT_FOUND'
+app-1  | }
+app-1  | 
+app-1  | Node.js v18.20.8
+app-1  | 
+app-1  | > rest-express@1.0.0 start
+app-1  | > NODE_ENV=production node dist/index.js
+app-1  | 
+app-1  | node:internal/errors:496
+app-1  |     ErrorCaptureStackTrace(err);
+app-1  |     ^
+app-1  | 
+app-1  | Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'vite' imported from /app/dist/index.js
+app-1  |     at new NodeError (node:internal/errors:405:5)
+app-1  |     at packageResolve (node:internal/modules/esm/resolve:916:9)
+app-1  |     at moduleResolve (node:internal/modules/esm/resolve:973:20)
+app-1  |     at defaultResolve (node:internal/modules/esm/resolve:1206:11)
+app-1  |     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:404:12)
+app-1  |     at ModuleLoader.resolve (node:internal/modules/esm/loader:373:25)
+app-1  |     at ModuleLoader.getModuleJob (node:internal/modules/esm/loader:250:38)
+app-1  |     at ModuleWrap.<anonymous> (node:internal/modules/esm/module_job:76:39)
+app-1  |     at link (node:internal/modules/esm/module_job:75:36) {
+app-1  |   code: 'ERR_MODULE_NOT_FOUND'
+app-1  | }
+app-1  | 
+app-1  | Node.js v18.20.8
+app-1  | 
+app-1  | > rest-express@1.0.0 start
+app-1  | > NODE_ENV=production node dist/index.js
+app-1  | 
+app-1  | node:internal/errors:496
+app-1  |     ErrorCaptureStackTrace(err);
+app-1  |     ^
+app-1  | 
+app-1  | Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'vite' imported from /app/dist/index.js
+app-1  |     at new NodeError (node:internal/errors:405:5)
+app-1  |     at packageResolve (node:internal/modules/esm/resolve:916:9)
+app-1  |     at moduleResolve (node:internal/modules/esm/resolve:973:20)
+app-1  |     at defaultResolve (node:internal/modules/esm/resolve:1206:11)
+app-1  |     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:404:12)
+app-1  |     at ModuleLoader.resolve (node:internal/modules/esm/loader:373:25)
+app-1  |     at ModuleLoader.getModuleJob (node:internal/modules/esm/loader:250:38)
+app-1  |     at ModuleWrap.<anonymous> (node:internal/modules/esm/module_job:76:39)
+app-1  |     at link (node:internal/modules/esm/module_job:75:36) {
+app-1  |   code: 'ERR_MODULE_NOT_FOUND'
+app-1  | }
+app-1  | 
+app-1  | Node.js v18.20.8
+app-1  | 
+app-1  | > rest-express@1.0.0 start
+app-1  | > NODE_ENV=production node dist/index.js
+app-1  | 
+app-1  | node:internal/errors:496
+app-1  |     ErrorCaptureStackTrace(err);
+app-1  |     ^
+app-1  | 
+app-1  | Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'vite' imported from /app/dist/index.js
+app-1  |     at new NodeError (node:internal/errors:405:5)
+app-1  |     at packageResolve (node:internal/modules/esm/resolve:916:9)
+app-1  |     at moduleResolve (node:internal/modules/esm/resolve:973:20)
+app-1  |     at defaultResolve (node:internal/modules/esm/resolve:1206:11)
+app-1  |     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:404:12)
+app-1  |     at ModuleLoader.resolve (node:internal/modules/esm/loader:373:25)
+app-1  |     at ModuleLoader.getModuleJob (node:internal/modules/esm/loader:250:38)
+app-1  |     at ModuleWrap.<anonymous> (node:internal/modules/esm/module_job:76:39)
+app-1  |     at link (node:internal/modules/esm/module_job:75:36) {
+app-1  |   code: 'ERR_MODULE_NOT_FOUND'
+app-1  | }
+app-1  | 
+app-1  | Node.js v18.20.8
+app-1  | 
+app-1  | > rest-express@1.0.0 start
+app-1  | > NODE_ENV=production node dist/index.js
+app-1  | 
+app-1  | node:internal/errors:496
+app-1  |     ErrorCaptureStackTrace(err);
+app-1  |     ^
+app-1  | 
+app-1  | Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'vite' imported from /app/dist/index.js
+app-1  |     at new NodeError (node:internal/errors:405:5)
+app-1  |     at packageResolve (node:internal/modules/esm/resolve:916:9)
+app-1  |     at moduleResolve (node:internal/modules/esm/resolve:973:20)
+app-1  |     at defaultResolve (node:internal/modules/esm/resolve:1206:11)
+app-1  |     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:404:12)
+app-1  |     at ModuleLoader.resolve (node:internal/modules/esm/loader:373:25)
+app-1  |     at ModuleLoader.getModuleJob (node:internal/modules/esm/loader:250:38)
+app-1  |     at ModuleWrap.<anonymous> (node:internal/modules/esm/module_job:76:39)
+app-1  |     at link (node:internal/modules/esm/module_job:75:36) {
+app-1  |   code: 'ERR_MODULE_NOT_FOUND'
+app-1  | }
+app-1  | 
+app-1  | Node.js v18.20.8
+app-1  | 
+app-1  | > rest-express@1.0.0 start
+app-1  | > NODE_ENV=production node dist/index.js
+app-1  | 
+app-1  | node:internal/errors:496
+app-1  |     ErrorCaptureStackTrace(err);
+app-1  |     ^
+app-1  | 
+app-1  | Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'vite' imported from /app/dist/index.js
+app-1  |     at new NodeError (node:internal/errors:405:5)
+app-1  |     at packageResolve (node:internal/modules/esm/resolve:916:9)
+app-1  |     at moduleResolve (node:internal/modules/esm/resolve:973:20)
+app-1  |     at defaultResolve (node:internal/modules/esm/resolve:1206:11)
+app-1  |     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:404:12)
+app-1  |     at ModuleLoader.resolve (node:internal/modules/esm/loader:373:25)
+app-1  |     at ModuleLoader.getModuleJob (node:internal/modules/esm/loader:250:38)
+app-1  |     at ModuleWrap.<anonymous> (node:internal/modules/esm/module_job:76:39)
+app-1  |     at link (node:internal/modules/esm/module_job:75:36) {
+app-1  |   code: 'ERR_MODULE_NOT_FOUND'
+app-1  | }
+app-1  | 
+app-1  | Node.js v18.20.8
