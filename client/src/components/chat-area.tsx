@@ -68,6 +68,16 @@ export default function ChatArea({ conversationId }: ChatAreaProps) {
 
   const { data: conversationData, isLoading, error } = useQuery<ConversationData>({
     queryKey: ["/api/conversations", conversationId],
+    queryFn: async () => {
+      if (!conversationId) return null;
+      const response = await fetch(`/api/conversations/${conversationId}`, {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("helpboard_token")}`,
+        },
+      });
+      if (!response.ok) throw new Error("Failed to fetch conversation");
+      return response.json();
+    },
     enabled: !!conversationId,
   });
 
