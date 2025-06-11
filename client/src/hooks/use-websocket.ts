@@ -52,6 +52,14 @@ export function useWebSocket() {
       window.dispatchEvent(new CustomEvent("conversation_updated"));
     });
 
+    ws.on("agent_takeover", (message) => {
+      console.log("Agent takeover:", message);
+      // Show notification that agent has joined
+      window.dispatchEvent(new CustomEvent("agent_takeover", { 
+        detail: { conversationId: message.conversationId, message: message.message }
+      }));
+    });
+
     ws.on("agent_status_changed", (message) => {
       console.log("Agent status changed:", message.agent);
     });

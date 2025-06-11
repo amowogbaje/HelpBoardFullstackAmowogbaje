@@ -37,6 +37,7 @@ export const conversations = pgTable("conversations", {
   customerId: integer("customer_id").notNull().references(() => customers.id),
   assignedAgentId: integer("assigned_agent_id").references(() => agents.id),
   status: text("status").notNull().default("open"), // open, assigned, closed
+  lastAgentInterventionAt: timestamp("last_agent_intervention_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

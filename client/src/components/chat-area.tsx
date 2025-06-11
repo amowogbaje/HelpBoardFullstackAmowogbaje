@@ -61,6 +61,7 @@ interface ChatAreaProps {
 export default function ChatArea({ conversationId }: ChatAreaProps) {
   const [messageText, setMessageText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [agentActiveMode, setAgentActiveMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const agent = getCurrentAgent();
   const queryClient = useQueryClient();
@@ -141,6 +142,22 @@ export default function ChatArea({ conversationId }: ChatAreaProps) {
       if (timeout) clearTimeout(timeout);
     };
   }, [isTyping, conversationId, sendTyping]);
+
+  // Listen for agent takeover notifications
+  useEffect(() => {
+    const handleAgentTakeover = (event: any) => {
+      if (event.detail.conversationId === conversationId) {
+        toast({
+          title: "Agent Joined",
+          description: "AI assistant will step aside while you handle this conversation",
+          duration: 3000,
+        });
+      }
+    };
+
+    window.addEventListener("agent_takeover", handleAgentTakeover);
+    return () => window.removeEventListener("agent_takeover", handleAgentTakeover);
+  }, [conversationId, toast]);
 
   const handleSendMessage = () => {
     if (!messageText.trim() || !conversationId || !agent) return;

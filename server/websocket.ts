@@ -191,10 +191,14 @@ export class WebSocketService {
         conversationId,
       });
 
-      // Check if AI should respond
+      // Check if AI should respond (only for customer messages)
       if (senderType === "customer") {
         console.log(`Customer message received: "${content}" - checking AI response`);
         await this.checkAIResponse(conversationId, content);
+      } else if (senderType === "agent") {
+        // Agent has taken over - update conversation to indicate human intervention
+        console.log(`Agent message sent for conversation ${conversationId} - AI stepping aside`);
+        await this.handleAgentTakeover(conversationId);
       }
 
     } catch (error) {
@@ -284,6 +288,26 @@ export class WebSocketService {
     }
   }
 
+  private async handleAgentTakeover(conversationId: number): Promise<void> {
+    try {
+      // Mark that an agent has intervened in this conversation
+      await storage.updateConversation(conversationId, {
+        lastAgentInterventionAt: new Date(),
+      });
+
+      // Broadcast agent takeover notification
+      this.broadcastToConversation(conversationId, {
+        type: "agent_takeover",
+        conversationId,
+        message: "Agent has joined the conversation"
+      });
+
+      console.log(`Agent takeover recorded for conversation ${conversationId}`);
+    } catch (error) {
+      console.error("Error handling agent takeover:", error);
+    }
+  }
+
   private async checkAIResponse(conversationId: number, customerMessage: string): Promise<void> {
     try {
       console.log(`Checking AI response for conversation ${conversationId}`);
@@ -296,7 +320,19 @@ export class WebSocketService {
       const hasAssignedAgent = conversation.assignedAgentId !== null;
       const timeSinceLastMessage = conversation.updatedAt ? Date.now() - conversation.updatedAt.getTime() : 0;
 
-      console.log(`Conversation status: ${conversation.status}, hasAssignedAgent: ${hasAssignedAgent}, timeSinceLastMessage: ${timeSinceLastMessage}`);
+      // Check if agent has intervened recently (within last 10 minutes)
+      const lastAgentIntervention = conversation.lastAgentInterventionAt;
+      const agentInterventionCooldown = 10 * 60 * 1000; // 10 minutes
+      const recentAgentIntervention = lastAgentIntervention && 
+        (Date.now() - lastAgentIntervention.getTime()) < agentInterventionCooldown;
+
+      console.log(`Conversation status: ${conversation.status}, hasAssignedAgent: ${hasAssignedAgent}, timeSinceLastMessage: ${timeSinceLastMessage}, recentAgentIntervention: ${recentAgentIntervention}`);
+
+      // AI should not respond if agent intervened recently
+      if (recentAgentIntervention) {
+        console.log("AI stepping aside - agent recently intervened");
+        return;
+      }
 
       const shouldRespond = await aiService.shouldAIRespond(
         conversation.status,
