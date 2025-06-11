@@ -6,6 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { isAuthenticated, loadAuthFromStorage } from "@/lib/auth";
 import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
+import Customers from "@/pages/customers";
+import Analytics from "@/pages/analytics";
+import AIAssistant from "@/pages/ai-assistant";
 import NotFound from "@/pages/not-found";
 
 // Load auth from storage on app start
@@ -19,13 +22,13 @@ function Router() {
         {() => isAuthenticated() ? <Dashboard /> : <Redirect to="/login" />}
       </Route>
       <Route path="/customers">
-        {() => isAuthenticated() ? <div>Customers page coming soon...</div> : <Redirect to="/login" />}
+        {() => isAuthenticated() ? <Customers /> : <Redirect to="/login" />}
       </Route>
       <Route path="/ai">
-        {() => isAuthenticated() ? <div>AI Assistant page coming soon...</div> : <Redirect to="/login" />}
+        {() => isAuthenticated() ? <AIAssistant /> : <Redirect to="/login" />}
       </Route>
       <Route path="/analytics">
-        {() => isAuthenticated() ? <div>Analytics page coming soon...</div> : <Redirect to="/login" />}
+        {() => isAuthenticated() ? <Analytics /> : <Redirect to="/login" />}
       </Route>
       <Route path="/settings">
         {() => isAuthenticated() ? <div>Settings page coming soon...</div> : <Redirect to="/login" />}

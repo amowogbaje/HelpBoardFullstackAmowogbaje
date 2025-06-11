@@ -81,10 +81,13 @@ export default function AIAssistant() {
 
   const { data: aiSettings } = useQuery<AISettings>({
     queryKey: ["/api/ai/settings"],
-    onSuccess: (data) => {
-      if (data) setSettings(data);
-    }
   });
+
+  useEffect(() => {
+    if (aiSettings) {
+      setSettings(aiSettings);
+    }
+  }, [aiSettings]);
 
   const addTrainingMutation = useMutation({
     mutationFn: async (data: TrainingData) => {

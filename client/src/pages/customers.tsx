@@ -59,9 +59,9 @@ export default function Customers() {
     {
       id: 2,
       name: "Friendly Visitor 858",
-      email: null,
-      phone: null,
-      address: null,
+      email: "",
+      phone: "",
+      address: "",
       country: "Nigeria",
       timezone: "Africa/Lagos",
       language: "en-GB",
