@@ -298,13 +298,36 @@ export class WebSocketService {
       );
 
       if (shouldRespond) {
+        // Show AI typing indicator immediately
+        this.broadcastToConversation(conversationId, {
+          type: "typing",
+          conversationId,
+          isTyping: true,
+          senderId: -1,
+          senderType: "agent",
+          senderName: "HelpBoard AI Assistant"
+        });
+
+        // Generate AI response with typing simulation
         setTimeout(async () => {
           const aiResponse = await aiService.generateResponse(
             conversationId,
             customerMessage,
-            conversation.customer.name || undefined
+            conversation.customer.name || undefined,
+            conversation.customer
           );
 
+          // Stop typing indicator
+          this.broadcastToConversation(conversationId, {
+            type: "typing",
+            conversationId,
+            isTyping: false,
+            senderId: -1,
+            senderType: "agent",
+            senderName: "HelpBoard AI Assistant"
+          });
+
+          // Send AI message
           const aiMessage = await storage.createMessage({
             conversationId,
             senderId: -1, // Special AI agent ID
@@ -326,7 +349,7 @@ export class WebSocketService {
             message: messageWithSender,
             conversationId,
           });
-        }, 2000); // 2 second delay to seem more natural
+        }, Math.random() * 2000 + 1000); // Random delay 1-3 seconds for natural feel
       }
     } catch (error) {
       console.error("Error in AI response check:", error);

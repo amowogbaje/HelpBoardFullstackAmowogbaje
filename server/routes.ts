@@ -309,6 +309,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/ai/training-data", requireAuth, async (req, res) => {
+    try {
+      const trainingData = aiService.getTrainingData();
+      res.json(trainingData);
+    } catch (error) {
+      console.error("Get training data error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/ai/training-data", requireAuth, async (req, res) => {
+    try {
+      const { question, answer, category, context } = req.body;
+      
+      if (!question || !answer || !category) {
+        return res.status(400).json({ message: "Question, answer, and category are required" });
+      }
+      
+      aiService.addTrainingData(question, answer, category, context);
+      res.json({ message: "Training data added successfully" });
+    } catch (error) {
+      console.error("Add training data error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.put("/api/ai/training-data/:index", requireAuth, async (req, res) => {
+    try {
+      const index = parseInt(req.params.index);
+      const { question, answer, category, context } = req.body;
+      
+      if (!question || !answer || !category) {
+        return res.status(400).json({ message: "Question, answer, and category are required" });
+      }
+      
+      aiService.updateTrainingData(index, { question, answer, category, context });
+      res.json({ message: "Training data updated successfully" });
+    } catch (error) {
+      console.error("Update training data error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/ai/training-data/:index", requireAuth, async (req, res) => {
+    try {
+      const index = parseInt(req.params.index);
+      aiService.removeTrainingData(index);
+      res.json({ message: "Training data deleted successfully" });
+    } catch (error) {
+      console.error("Delete training data error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/ai/settings", requireAuth, async (req, res) => {
+    try {
+      const settings = aiService.getSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Get AI settings error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.put("/api/ai/settings", requireAuth, async (req, res) => {
+    try {
+      aiService.updateSettings(req.body);
+      res.json({ message: "AI settings updated successfully" });
+    } catch (error) {
+      console.error("Update AI settings error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   app.post("/api/ai/retrain", requireAuth, async (req, res) => {
     try {
       const { conversationId } = req.body;
