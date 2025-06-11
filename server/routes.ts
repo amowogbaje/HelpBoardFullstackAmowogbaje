@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage } from "./database-storage";
 import { aiService } from "./ai-service";
 import { initializeWebSocket, getWebSocketService } from "./websocket";
 import { 

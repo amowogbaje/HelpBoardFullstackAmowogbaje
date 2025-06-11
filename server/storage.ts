@@ -15,6 +15,8 @@ import {
   type InsertMessage,
   type InsertSession,
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc, and, isNull, count, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import bcrypt from "bcryptjs";
 
@@ -56,13 +58,7 @@ export interface IStorage {
   validateAgent(email: string, password: string): Promise<Agent | null>;
 }
 
-export class MemStorage implements IStorage {
-  private agents: Map<number, Agent> = new Map();
-  private customers: Map<number, Customer> = new Map();
-  private conversations: Map<number, Conversation> = new Map();
-  private messages: Map<number, Message> = new Map();
-  private sessions: Map<string, Session> = new Map();
-  private currentId = 1;
+export class DatabaseStorage implements IStorage {
 
   constructor() {
     this.seedData();
@@ -376,4 +372,4 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

@@ -1,6 +1,6 @@
 import { WebSocketServer, WebSocket } from "ws";
 import { Server } from "http";
-import { storage } from "./storage";
+import { storage } from "./database-storage";
 import { aiService } from "./ai-service";
 
 interface WebSocketMessage {
