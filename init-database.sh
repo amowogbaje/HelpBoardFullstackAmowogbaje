@@ -44,8 +44,8 @@ wait_for_database() {
 create_schema() {
     log_step "Creating database schema..."
     
-    # Run Drizzle push to create all tables
-    if npm run db:push; then
+    # Run Drizzle push from within the app container
+    if docker compose -f "$COMPOSE_FILE" exec -T app npm run db:push; then
         log_success "Database schema created successfully"
     else
         log_error "Failed to create database schema"
