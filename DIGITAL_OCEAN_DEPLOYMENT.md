@@ -78,45 +78,57 @@ SESSION_SECRET=your_secure_session_secret_32_chars_min
 SSL_EMAIL=your-email@example.com
 ```
 
-### 4. Bulletproof Deployment Process
+### 4. Simple Two-Command Deployment
 
-The deployment system has been completely rewritten for zero-error deployment:
+The deployment has been simplified to just two commands that handle everything automatically:
 
-#### Complete Deployment (Recommended)
-
-```bash
-# Make the complete deployment script executable
-chmod +x deploy-complete.sh
-
-# Run bulletproof deployment with comprehensive error handling
-./deploy-complete.sh
-```
-
-This bulletproof script will:
-- **Pre-deployment validation**: Check DNS, ports, environment variables
-- **Automatic Docker installation**: Install Docker if not present
-- **SSL certificate generation**: Create Let's Encrypt certificates with validation
-- **Database initialization**: Create schema with proper error handling and verification
-- **Authentication fixes**: Apply comprehensive session management fixes
-- **Health monitoring**: Extensive health checks with exponential backoff
-- **Post-deployment verification**: Complete system validation
-- **Deployment report**: Generate comprehensive deployment report
-
-**Features:**
-- Zero-error guarantee with comprehensive error handling
-- Automatic rollback on critical failures
-- Real-time logging to `/var/log/helpboard-deployment.log`
-- Color-coded output for easy monitoring
-- Exponential backoff for service readiness checks
-- Complete authentication system overhaul
-
-#### Alternative: Quick Development Mode
+#### Command 1: System Setup (Run Once)
 
 ```bash
-# For development mode (if complete deployment not needed)
-chmod +x deploy-dev.sh
-./deploy-dev.sh
+# SSH into your droplet
+ssh root@161.35.58.110
+cd /opt/helpboard
+
+# Install all dependencies (Docker, Docker Compose, SSL tools, etc.)
+sudo ./simple-deploy.sh setup
 ```
+
+This command automatically:
+- Installs Docker using the official installation script
+- Resolves docker-compose-plugin issues by installing Docker Compose V2
+- Sets up firewall rules (ports 80, 443, SSH)
+- Installs SSL certificate tools
+- Creates environment configuration template
+
+#### Command 2: Deploy Application
+
+```bash
+# Edit the environment file with your API keys
+nano .env
+
+# Deploy the complete application
+./simple-deploy.sh deploy
+```
+
+This command automatically:
+- Validates environment configuration
+- Generates SSL certificates (Let's Encrypt or self-signed fallback)
+- Builds and starts all Docker services
+- Initializes database schema
+- Creates default admin and agent accounts
+- Performs health checks
+- Generates deployment summary
+
+**Default Credentials Created:**
+- Admin: `admin@helpboard.com` / `admin123`
+- Agent: `agent@helpboard.com` / `password123`
+
+**Zero Configuration Required:**
+- Handles Docker Compose V1/V2 compatibility automatically
+- Resolves docker-compose-plugin installation issues
+- Works on Ubuntu 18.04, 20.04, 22.04, and newer
+- Automatic SSL certificate generation with Let's Encrypt
+- Self-signed certificate fallback if Let's Encrypt fails
 
 ### 5. Deployment Utilities
 
