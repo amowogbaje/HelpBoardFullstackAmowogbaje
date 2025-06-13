@@ -57,7 +57,7 @@ export function loadAuthFromStorage(): boolean {
 }
 
 export async function login(email: string, password: string): Promise<LoginResponse> {
-  const response = await apiRequest("POST", "/api/login", { email, password });
+  const response = await apiRequest("POST", "/api/auth/login", { email, password });
   const data: LoginResponse = await response.json();
   
   setAuth(data.sessionToken, data.agent);

@@ -29,12 +29,16 @@ async function requireAuth(req: any, res: any, next: any) {
   if (!session) {
     try {
       const dbSession = await storage.getSession(token);
-      if (dbSession && (!dbSession.expiresAt || dbSession.expiresAt > new Date())) {
-        session = { 
-          agentId: dbSession.agentId || 0, 
-          expiresAt: dbSession.expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000) 
-        };
-        sessions.set(token, session);
+      if (dbSession && dbSession.agentId && (!dbSession.expiresAt || dbSession.expiresAt > new Date())) {
+        // Verify the agent still exists and is active
+        const agent = await storage.getAgent(dbSession.agentId);
+        if (agent && agent.isActive) {
+          session = { 
+            agentId: dbSession.agentId, 
+            expiresAt: dbSession.expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000) 
+          };
+          sessions.set(token, session);
+        }
       }
     } catch (error) {
       console.error("Error checking session:", error);
@@ -43,6 +47,14 @@ async function requireAuth(req: any, res: any, next: any) {
   
   if (!session || session.expiresAt < new Date()) {
     sessions.delete(token);
+    if (session) {
+      // Clean up expired session from database
+      try {
+        await storage.deleteSession(token);
+      } catch (error) {
+        console.error("Error deleting expired session:", error);
+      }
+    }
     return res.status(401).json({ message: "Invalid or expired session" });
   }
 
