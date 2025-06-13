@@ -92,16 +92,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
+      if (!agent.isActive) {
+        return res.status(401).json({ message: "Account is disabled" });
+      }
+
       const sessionToken = nanoid();
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
       
-      sessions.set(sessionToken, { agentId: agent.id, expiresAt });
+      // Enhanced session data structure
+      const sessionData = {
+        agentId: agent.id,
+        agent,
+        expiresAt,
+        lastActivity: new Date()
+      };
       
-      // Store session in storage as well
+      sessions.set(sessionToken, sessionData);
+      
+      // Store session in database
       await storage.createSession({
         id: sessionToken,
         agentId: agent.id,
-        data: { email: agent.email },
+        data: { email: agent.email, role: agent.role },
         expiresAt,
       });
 
