@@ -154,8 +154,20 @@ deploy_application() {
     # Run database migration
     log_info "Running database migration..."
     if $DOCKER_COMPOSE -f "$COMPOSE_FILE" exec -T db pg_isready -U helpboard_user; then
+        # Wait a bit more for database to be fully ready
+        sleep 10
+        
+        # First, ensure database schema is created
+        log_info "Creating database schema..."
         npm run db:push
-        log_info "Database schema updated successfully"
+        
+        # Verify tables were created
+        if $DOCKER_COMPOSE -f "$COMPOSE_FILE" exec -T db psql -U helpboard_user -d helpboard -c "\dt" | grep -q "agents"; then
+            log_info "Database schema created successfully"
+        else
+            log_error "Database schema creation failed"
+            return 1
+        fi
     else
         log_warn "Database not ready, skipping migration"
     fi
