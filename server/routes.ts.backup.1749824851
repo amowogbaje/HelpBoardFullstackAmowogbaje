@@ -715,3 +715,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   return httpServer;
 }
+
+  // Session validation endpoint
+  app.get("/api/auth/validate", requireAuth, async (req, res) => {
+    res.json({
+      valid: true,
+      agent: {
+        id: req.agent.id,
+        email: req.agent.email,
+        name: req.agent.name,
+        role: req.agent.role,
+        isAvailable: req.agent.isAvailable
+      }
+    });
+  });

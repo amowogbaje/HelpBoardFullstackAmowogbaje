@@ -1,0 +1,20 @@
+// Enhanced session management interface
+interface SessionData {
+  agentId: number;
+  agent: Agent;
+  expiresAt: Date;
+  lastActivity: Date;
+}
+
+const sessions = new Map<string, SessionData>();
+
+// Session cleanup interval
+setInterval(() => {
+  const now = new Date();
+  for (const [token, session] of sessions.entries()) {
+    if (session.expiresAt <= now) {
+      sessions.delete(token);
+      storage.deleteSession(token).catch(console.error);
+    }
+  }
+}, 60000);
