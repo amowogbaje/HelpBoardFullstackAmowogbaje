@@ -4,12 +4,19 @@ This guide provides step-by-step instructions for deploying HelpBoard on Digital
 
 ## Quick Start for Digital Ocean
 
-### 1. Create Digital Ocean Droplet
+### 1. Prerequisites Checklist
+
+Before starting deployment, ensure:
+- [ ] Digital Ocean droplet created (Ubuntu 22.04 LTS)
+- [ ] DNS A record: `helpboard.selfany.com` → `161.35.58.110`
+- [ ] SSH access to droplet configured
+- [ ] Required API keys available (OpenAI, etc.)
 
 **Recommended Droplet Configuration:**
 - **Size**: Regular (4GB RAM, 2 vCPU, 80GB SSD) - $24/month
 - **Image**: Ubuntu 22.04 LTS x64
 - **Region**: Choose closest to your users (e.g., NYC, SFO, LON)
+- **IP**: 161.35.58.110 (your assigned IP)
 - **Additional Options**: 
   - Enable monitoring
   - Add SSH keys
@@ -79,24 +86,30 @@ This script will:
 - Deploy the complete application
 - Verify deployment health
 
-### 5. Alternative: Manual SSL Setup
+### 5. SSL Troubleshooting (If Issues Occur)
 
-If the automated script fails, use manual SSL setup:
+If SSL certificate generation fails, use the troubleshooting tools:
 
 ```bash
-# Check DNS first
-dig helpboard.selfany.com
-# Should return: 161.35.58.110
+# Run SSL diagnostics
+chmod +x ssl-troubleshoot.sh
+sudo ./ssl-troubleshoot.sh check
 
-# Generate SSL certificate manually
+# Attempt automatic fixes
+sudo ./ssl-troubleshoot.sh fix
+
+# Manual SSL retry after fixes
 sudo ./deploy-single-domain.sh ssl
 
-# Deploy application
-sudo ./deploy-single-domain.sh deploy
-
-# Check status
+# Check final status
 sudo ./deploy-single-domain.sh status
 ```
+
+**Quick SSL Issue Resolution:**
+1. **DNS Problems**: Verify `dig helpboard.selfany.com` returns `161.35.58.110`
+2. **Firewall Issues**: Ensure ports 80/443 are open with `sudo ufw status`
+3. **Rate Limits**: Wait 1 hour if Let's Encrypt rate limited
+4. **Certificate Conflicts**: Clean with `sudo ./ssl-troubleshoot.sh clean`
 
 ## Digital Ocean Specific Optimizations
 
@@ -175,10 +188,45 @@ ls -la ssl/
 # Test SSL connection
 openssl s_client -connect helpboard.selfany.com:443 -servername helpboard.selfany.com
 
-# Regenerate certificates
+# Check DNS resolution
+dig helpboard.selfany.com
+nslookup helpboard.selfany.com
+
+# Debug SSL generation
+sudo ./deploy-single-domain.sh ssl
+
+# If still failing, check Let's Encrypt rate limits
+curl -s "https://crt.sh/?q=helpboard.selfany.com&output=json" | jq '.[0:5]'
+
+# Clean regeneration
 rm -rf ssl/* certbot/*
-./deploy.sh ssl
+sudo ./deploy-single-domain.sh ssl
 ```
+
+**Common SSL Issues and Solutions:**
+1. **Rate Limiting**: Let's Encrypt has rate limits (5 failures per hour)
+   ```bash
+   # Wait 1 hour or use staging environment first
+   # Check rate limit status at: https://letsencrypt.org/docs/rate-limits/
+   ```
+
+2. **DNS Propagation**: Domain not resolving correctly
+   ```bash
+   # Wait for DNS propagation (up to 48 hours)
+   # Test from different locations: https://dnschecker.org/
+   ```
+
+3. **Firewall Issues**: Port 80 blocked
+   ```bash
+   sudo ufw status
+   sudo ufw allow 80/tcp
+   sudo systemctl restart ufw
+   ```
+
+4. **Domain Configuration**: Wrong domain in certbot
+   ```bash
+   # Ensure only helpboard.selfany.com is used, no www subdomain
+   ```
 
 ### Memory and Performance Issues
 
