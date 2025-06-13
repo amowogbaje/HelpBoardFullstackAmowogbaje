@@ -75,23 +75,29 @@ NODE_ENV=production
 DOMAIN=helpboard.selfany.com
 ```
 
-### 4. Single-Domain Deployment (Recommended)
+### 4. Development Mode Deployment (Recommended)
 
-Use the optimized single-domain deployment script that handles SSL issues:
+Use the development mode deployment to avoid Vite build complexities:
 
 ```bash
 # Make script executable
-chmod +x deploy-single-domain.sh
+chmod +x deploy-dev.sh
 
-# Run complete deployment with SSL
-sudo ./deploy-single-domain.sh init
+# Run complete deployment in development mode
+./deploy-dev.sh deploy
 ```
+
+**Why Development Mode is Better:**
+- Eliminates complex Vite build issues
+- Faster deployment and restart times
+- Hot reload capability for updates
+- Better error visibility and debugging
+- No build cache conflicts
 
 This script will:
 - Check DNS configuration for helpboard.selfany.com
 - Set up SSL certificates specifically for single domain
-- Handle common certbot/Let's Encrypt issues
-- Deploy the complete application
+- Deploy application in development mode (more reliable)
 - Verify deployment health
 
 ### 5. SSL Troubleshooting (If Issues Occur)

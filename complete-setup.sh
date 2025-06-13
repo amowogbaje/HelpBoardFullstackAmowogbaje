@@ -275,7 +275,7 @@ show_summary() {
     echo
     echo "3. Deploy the application:"
     echo "   cd $APP_DIR"
-    echo "   sudo -u $ACTUAL_USER ./deploy-fixed.sh full"
+    echo "   ./deploy-dev.sh deploy"
     echo
     echo "4. Check deployment status:"
     echo "   ./deploy-fixed.sh status"
