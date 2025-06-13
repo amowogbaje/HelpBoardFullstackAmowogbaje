@@ -36,6 +36,34 @@ clean_docker_build() {
     log_info "Docker cache cleaned"
 }
 
+# Check prerequisites and install if needed
+check_prerequisites() {
+    log_info "Checking deployment prerequisites..."
+    
+    # Check if Node.js is installed
+    if ! command -v node &> /dev/null; then
+        log_error "Node.js is not installed. Please run the setup script first:"
+        log_error "sudo ./digital-ocean-setup.sh"
+        exit 1
+    fi
+    
+    # Check if npm is installed
+    if ! command -v npm &> /dev/null; then
+        log_error "npm is not installed. Please run the setup script first:"
+        log_error "sudo ./digital-ocean-setup.sh"
+        exit 1
+    fi
+    
+    # Check if Docker is installed
+    if ! command -v docker &> /dev/null; then
+        log_error "Docker is not installed. Please run the setup script first:"
+        log_error "sudo ./digital-ocean-setup.sh"
+        exit 1
+    fi
+    
+    log_info "Prerequisites check passed"
+}
+
 # Test local build before Docker
 test_local_build() {
     log_info "Testing local build process..."
@@ -198,18 +226,21 @@ deploy_with_verification() {
 full_deployment() {
     log_info "Starting complete HelpBoard deployment..."
     
-    # Step 1: Clean previous builds
+    # Step 1: Check prerequisites
+    check_prerequisites
+    
+    # Step 2: Clean previous builds
     clean_docker_build
     
-    # Step 2: Test local build
+    # Step 3: Test local build
     test_local_build
     
-    # Step 3: Setup SSL
+    # Step 4: Setup SSL
     if ! setup_ssl_robust; then
         log_warn "SSL setup failed, continuing with deployment..."
     fi
     
-    # Step 4: Deploy application
+    # Step 5: Deploy application
     deploy_with_verification
     
     log_info "Deployment completed successfully!"

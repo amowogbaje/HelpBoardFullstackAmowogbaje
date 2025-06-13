@@ -22,29 +22,37 @@ Before starting deployment, ensure:
   - Add SSH keys
   - Enable backups (recommended)
 
-### 2. Initial Server Setup
+### 2. Complete Server Setup
 
 ```bash
 # SSH into your droplet
 ssh root@161.35.58.110
 
-# Run the automated setup script
-wget https://raw.githubusercontent.com/your-repo/helpboard/main/digital-ocean-setup.sh
-chmod +x digital-ocean-setup.sh
-sudo ./digital-ocean-setup.sh
+# Download and run the complete setup script
+wget https://raw.githubusercontent.com/your-repo/helpboard/main/complete-setup.sh
+chmod +x complete-setup.sh
+sudo ./complete-setup.sh
 ```
 
-### 3. Deploy HelpBoard Application
+This script will:
+- Install Node.js 20 LTS and npm
+- Install Docker and Docker Compose
+- Configure firewall and security settings
+- Set up the application directory structure
+- Clone repository files correctly
+- Install application dependencies
+- Test the build process
+- Generate secure environment configuration
+
+### 3. Configure and Deploy
+
+After the setup script completes, configure your application:
 
 ```bash
-# Navigate to application directory
+# Navigate to application directory (created by setup script)
 cd /opt/helpboard
 
-# Clone your repository
-git clone https://github.com/your-org/helpboard.git .
-
-# Configure environment
-cp .env.example .env
+# Edit environment configuration
 nano .env
 ```
 

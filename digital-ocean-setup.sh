@@ -36,7 +36,7 @@ check_os() {
 update_system() {
     log_info "Updating system packages..."
     apt update && apt upgrade -y
-    apt install -y curl wget gnupg2 software-properties-common apt-transport-https ca-certificates lsb-release ufw fail2ban
+    apt install -y curl wget gnupg2 software-properties-common apt-transport-https ca-certificates lsb-release ufw fail2ban git build-essential
 }
 
 # Configure firewall for Digital Ocean
