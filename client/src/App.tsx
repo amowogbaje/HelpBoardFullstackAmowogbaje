@@ -4,7 +4,6 @@ import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { isAuthenticated, loadAuthFromStorage } from "@/lib/auth";
-import { useEffect, useState } from "react";
 import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
 import Customers from "@/pages/customers";
@@ -14,27 +13,8 @@ import AITraining from "@/pages/ai-training";
 import WidgetGuides from "@/pages/widget-guides";
 import NotFound from "@/pages/not-found";
 
-function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuth, setIsAuth] = useState(false);
-
-  useEffect(() => {
-    // Load auth from storage and verify session
-    const authLoaded = loadAuthFromStorage();
-    setIsAuth(authLoaded);
-    setIsLoading(false);
-  }, []);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  return <>{children}</>;
-}
+// Load auth from storage on app start
+loadAuthFromStorage();
 
 function Router() {
   return (
@@ -70,10 +50,8 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AuthProvider>
-          <Router />
-          <Toaster />
-        </AuthProvider>
+        <Toaster />
+        <Router />
       </TooltipProvider>
     </QueryClientProvider>
   );

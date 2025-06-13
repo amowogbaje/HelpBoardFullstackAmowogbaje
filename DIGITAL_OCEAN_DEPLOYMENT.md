@@ -1,6 +1,6 @@
-# HelpBoard Digital Ocean Deployment Guide
+# HelpBoard Digital Ocean Production Deployment Guide
 
-This guide provides step-by-step instructions for deploying HelpBoard on Digital Ocean with the new consolidated deployment system.
+This guide provides step-by-step instructions for deploying HelpBoard on Digital Ocean infrastructure, addressing the specific requirements for domain `helpboard.selfany.com` and IP `67.205.138.68`.
 
 ## Quick Start for Digital Ocean
 
@@ -8,7 +8,7 @@ This guide provides step-by-step instructions for deploying HelpBoard on Digital
 
 Before starting deployment, ensure:
 - [ ] Digital Ocean droplet created (Ubuntu 22.04 LTS)
-- [ ] DNS A record: `helpboard.selfany.com` → `161.35.58.110`
+- [ ] DNS A record: `helpboard.selfany.com` → `67.205.138.68`
 - [ ] SSH access to droplet configured
 - [ ] Required API keys available (OpenAI, etc.)
 
@@ -16,152 +16,89 @@ Before starting deployment, ensure:
 - **Size**: Regular (4GB RAM, 2 vCPU, 80GB SSD) - $24/month
 - **Image**: Ubuntu 22.04 LTS x64
 - **Region**: Choose closest to your users (e.g., NYC, SFO, LON)
+- **IP**: 67.205.138.68 (your assigned IP)
 - **Additional Options**: 
   - Enable monitoring
   - Add SSH keys
   - Enable backups (recommended)
 
-### 2. Server Setup and Repository
+### 2. Complete Server Setup
 
 ```bash
 # SSH into your droplet
-ssh root@161.35.58.110
+ssh root@67.205.138.68
 
-# Install essential dependencies
-apt update && apt upgrade -y
-apt install -y curl git docker.io docker-compose-plugin
-
-# Start Docker service
-systemctl start docker
-systemctl enable docker
-
-# Configure firewall
-ufw allow OpenSSH
-ufw allow 80/tcp
-ufw allow 443/tcp
-ufw --force enable
-
-# Clone repository
-git clone https://github.com/amowogbaje/HelpBoardFullstackAmowogbaje.git /opt/helpboard
-cd /opt/helpboard
+# Download and run the complete setup script
+wget https://raw.githubusercontent.com/amowogbaje/HelpBoardFullstackAmowogbaje/main/complete-setup.sh
+chmod +x complete-setup.sh
+sudo ./complete-setup.sh
 ```
 
-### 3. Environment Configuration
+This script will:
+- Install Node.js 20 LTS and npm
+- Install Docker and Docker Compose
+- Configure firewall and security settings
+- Set up the application directory structure
+- Clone repository files correctly
+- Install application dependencies
+- Test the build process
+- Generate secure environment configuration
 
-Create and configure your environment file:
+### 3. Configure and Deploy
+
+After the setup script completes, configure your application:
 
 ```bash
-# Copy environment template
-cp .env.example .env
+# Navigate to application directory (created by setup script)
+cd /opt/helpboard
 
 # Edit environment configuration
 nano .env
 ```
 
-**Required Environment Variables:**
+**Required Environment Variables for Digital Ocean:**
 ```env
-# Database Configuration (automatically generated secure passwords)
-DATABASE_URL=postgresql://helpboard_user:secure_generated_password@db:5432/helpboard
+# Database Configuration
+DB_PASSWORD=your_secure_database_password_here
+REDIS_PASSWORD=your_secure_redis_password_here
 
-# OpenAI API Key (required)
+# OpenAI API Key
 OPENAI_API_KEY=your_openai_api_key_here
 
-# Application Configuration
-NODE_ENV=development
+# Session Security
+SESSION_SECRET=your_session_secret_minimum_32_characters
+
+# Digital Ocean Specific
+CORS_ORIGIN=https://helpboard.selfany.com
+TRUST_PROXY=true
+NODE_ENV=production
 DOMAIN=helpboard.selfany.com
-PORT=3000
-
-# Security
-SESSION_SECRET=your_secure_session_secret_32_chars_min
-
-# SSL Configuration
-SSL_EMAIL=your-email@example.com
 ```
 
-### 4. Simple Two-Command Deployment
+### 4. Development Mode Deployment (Recommended)
 
-The deployment has been simplified to just two commands that handle everything automatically:
-
-#### Command 1: Download and Setup
+Use the development mode deployment to avoid Vite build complexities:
 
 ```bash
-# SSH into your droplet
-ssh root@161.35.58.110
+# Make script executable
+chmod +x deploy-dev.sh
 
-# Clone repository to /opt/helpboard
-git clone https://github.com/amowogbaje/HelpBoardFullstackAmowogbaje.git /opt/helpboard
-cd /opt/helpboard
-
-# Download and run setup script
-wget -O quick-setup.sh https://raw.githubusercontent.com/amowogbaje/HelpBoardFullstackAmowogbaje/main/quick-setup.sh
-chmod +x quick-setup.sh
-sudo ./quick-setup.sh
+# Run complete deployment in development mode
+./deploy-dev.sh deploy
 ```
 
-This command automatically:
-- Installs Docker using the official installation script (resolves all docker-compose-plugin issues)
-- Installs Docker Compose V2 with full compatibility
-- Sets up firewall rules (ports 80, 443, SSH)
-- Creates environment configuration template
-- Creates deployment script
+**Why Development Mode is Better:**
+- Eliminates complex Vite build issues
+- Faster deployment and restart times
+- Hot reload capability for updates
+- Better error visibility and debugging
+- No build cache conflicts
 
-#### Command 2: Configure and Deploy
-
-```bash
-# Edit the environment file with your OpenAI API key
-nano .env
-
-# Deploy in development mode (stable and reliable)
-./deploy.sh
-```
-
-This command automatically:
-- Validates environment configuration
-- Generates SSL certificates (Let's Encrypt or self-signed fallback)
-- Builds and starts all Docker services
-- Initializes database schema
-- Creates default admin and agent accounts
-- Performs health checks
-- Generates deployment summary
-
-**Default Credentials Created:**
-- Admin: `admin@helpboard.com` / `admin123`
-- Agent: `agent@helpboard.com` / `password123`
-
-**Zero Configuration Required:**
-- Handles Docker Compose V1/V2 compatibility automatically
-- Resolves docker-compose-plugin installation issues
-- Works on Ubuntu 18.04, 20.04, 22.04, and newer
-- Automatic SSL certificate generation with Let's Encrypt
-- Self-signed certificate fallback if Let's Encrypt fails
-
-### 5. Deployment Utilities
-
-Use the new utility script for debugging and maintenance:
-
-```bash
-# Make utility script executable
-chmod +x deployment-helpers.sh
-
-# Debug deployment issues
-./deployment-helpers.sh debug
-
-# Apply quick fixes for common problems
-./deployment-helpers.sh quick-fix
-
-# Test login functionality
-./deployment-helpers.sh test-login
-
-# Clean deployment (removes all containers and volumes)
-./deployment-helpers.sh clean
-```
-
-**Available Utility Commands:**
-- `debug` - Comprehensive system diagnostics
-- `quick-fix` - Restart services and fix common issues
-- `test-login` - Verify login functionality with curl tests
-- `clean` - Complete clean deployment (removes everything)
-- `help` - Show command usage
+This script will:
+- Check DNS configuration for helpboard.selfany.com
+- Set up SSL certificates specifically for single domain
+- Deploy application in development mode (more reliable)
+- Verify deployment health
 
 ### 5. SSL Troubleshooting (If Issues Occur)
 
