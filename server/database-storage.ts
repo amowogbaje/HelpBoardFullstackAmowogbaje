@@ -74,35 +74,79 @@ export class DatabaseStorage implements IStorage {
     try {
       console.log("Seeding initial data...");
       
-      // Check if agent already exists
-      const existingAgent = await db.select().from(agents).where(eq(agents.email, "agent@helpboard.com")).limit(1);
+      // Check if any agents exist
+      const existingAgents = await db.select().from(agents).limit(1);
       
-      if (existingAgent.length === 0) {
-        // Create admin agent with new schema
-        await db.insert(agents).values({
-          name: "Admin User",
-          email: "admin@helpboard.com",
-          password: await bcrypt.hash("admin123", 10),
-          role: "admin",
-          isAvailable: true,
-          isActive: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          passwordChangedAt: new Date(),
-        });
+      if (existingAgents.length === 0) {
+        const hashedPassword = await bcrypt.hash("admin123", 10);
         
-        // Create regular agent
-        await db.insert(agents).values({
-          name: "Support Agent",
-          email: "agent@helpboard.com",
-          password: await bcrypt.hash("password123", 10),
-          role: "agent",
-          isAvailable: true,
-          isActive: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          passwordChangedAt: new Date(),
-        });
+        try {
+          // Try new schema format first (for updated databases)
+          await db.insert(agents).values({
+            name: "Admin User",
+            email: "admin@helpboard.com", 
+            password: hashedPassword,
+            role: "admin",
+            isAvailable: true,
+            isActive: true,
+            department: "Administration", 
+            phone: "+1-555-0100",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            passwordChangedAt: new Date(),
+          });
+          
+          console.log("Created admin with new schema");
+          
+        } catch (error: any) {
+          // If new schema fails, try basic schema (for older databases)
+          if (error.message?.includes('column') && error.message?.includes('does not exist')) {
+            console.log("New schema columns not available, using basic schema");
+            await db.insert(agents).values({
+              name: "Admin User",
+              email: "admin@helpboard.com",
+              password: hashedPassword,
+              isAvailable: true,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+            console.log("Created admin with basic schema");
+          } else {
+            throw error;
+          }
+        }
+        
+        try {
+          // Try creating regular agent with new schema
+          await db.insert(agents).values({
+            name: "Support Agent",
+            email: "agent@helpboard.com",
+            password: await bcrypt.hash("password123", 10),
+            role: "agent",
+            isAvailable: true,
+            isActive: true,
+            department: "Customer Support",
+            phone: "+1-555-0200",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            passwordChangedAt: new Date(),
+          });
+        } catch (error: any) {
+          // Fallback to basic schema if needed
+          if (error.message?.includes('column') && error.message?.includes('does not exist')) {
+            await db.insert(agents).values({
+              name: "Support Agent",
+              email: "agent@helpboard.com",
+              password: await bcrypt.hash("password123", 10),
+              isAvailable: true,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+          } else {
+            throw error;
+          }
+        }
+        
         console.log("Initial agents created");
       }
 
