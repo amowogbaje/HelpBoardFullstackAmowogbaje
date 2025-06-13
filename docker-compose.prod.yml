@@ -58,7 +58,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     restart: always
     environment:
       NODE_ENV: production
