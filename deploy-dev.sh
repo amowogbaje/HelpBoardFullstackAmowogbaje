@@ -118,6 +118,78 @@ EOF
     fi
 }
 
+# Initialize database with proper schema and credentials
+initialize_database() {
+    log_info "Initializing database..."
+    
+    # Wait for database to be fully ready
+    local max_attempts=30
+    local attempt=1
+    
+    while [ $attempt -le $max_attempts ]; do
+        if $DOCKER_COMPOSE -f "$COMPOSE_FILE" exec -T db pg_isready -U helpboard_user -d helpboard > /dev/null 2>&1; then
+            log_info "Database is ready"
+            break
+        fi
+        log_info "Waiting for database... attempt $attempt/$max_attempts"
+        sleep 3
+        ((attempt++))
+    done
+    
+    if [ $attempt -gt $max_attempts ]; then
+        log_error "Database failed to become ready"
+        return 1
+    fi
+    
+    # Create database schema
+    log_info "Creating database schema..."
+    if $DOCKER_COMPOSE -f "$COMPOSE_FILE" exec -T app npm run db:push; then
+        log_info "Database schema created successfully"
+    else
+        log_error "Failed to create database schema"
+        return 1
+    fi
+    
+    # Verify tables exist
+    if $DOCKER_COMPOSE -f "$COMPOSE_FILE" exec -T db psql -U helpboard_user -d helpboard -c "\dt" | grep -q "agents\|customers\|conversations"; then
+        log_info "Required tables verified"
+    else
+        log_error "Database tables missing"
+        return 1
+    fi
+    
+    # Set up default agents
+    log_info "Setting up default agents..."
+    $DOCKER_COMPOSE -f "$COMPOSE_FILE" exec -T db psql -U helpboard_user -d helpboard << 'EOF'
+-- Clear existing agents to avoid conflicts
+TRUNCATE TABLE agents CASCADE;
+
+-- Insert admin agent (admin@helpboard.com / admin123)
+INSERT INTO agents (
+    email, password, name, role, is_active, is_available,
+    department, phone, created_at, updated_at, password_changed_at
+) VALUES (
+    'admin@helpboard.com',
+    '$2a$10$HWTRhBUQ3O1l.zyQsZvx0.fJBMVqQNrxvSvJ1NbeGGD4gEB2g9VO6',
+    'System Administrator', 'admin', true, true,
+    'Administration', '+1-555-0100', NOW(), NOW(), NOW()
+);
+
+-- Insert support agent (agent@helpboard.com / password123)
+INSERT INTO agents (
+    email, password, name, role, is_active, is_available,
+    department, phone, created_at, updated_at, password_changed_at
+) VALUES (
+    'agent@helpboard.com',
+    '$2a$10$HWTRhBUQ3O1l.zyQsZvx0.fJBMVqQNrxvSvJ1NbeGGD4gEB2g9VO6',
+    'Support Agent', 'agent', true, true,
+    'Customer Support', '+1-555-0200', NOW(), NOW(), NOW()
+);
+EOF
+
+    log_info "Default agents created successfully"
+}
+
 # Deploy application in development mode
 deploy_application() {
     log_info "Deploying HelpBoard in development mode..."
@@ -151,26 +223,13 @@ deploy_application() {
     log_info "Waiting for services to start..."
     sleep 30
     
-    # Run database migration
-    log_info "Running database migration..."
-    if $DOCKER_COMPOSE -f "$COMPOSE_FILE" exec -T db pg_isready -U helpboard_user; then
-        # Wait a bit more for database to be fully ready
-        sleep 10
-        
-        # First, ensure database schema is created
-        log_info "Creating database schema..."
-        npm run db:push
-        
-        # Verify tables were created
-        if $DOCKER_COMPOSE -f "$COMPOSE_FILE" exec -T db psql -U helpboard_user -d helpboard -c "\dt" | grep -q "agents"; then
-            log_info "Database schema created successfully"
-        else
-            log_error "Database schema creation failed"
-            return 1
-        fi
-    else
-        log_warn "Database not ready, skipping migration"
-    fi
+    # Initialize database with schema and credentials
+    initialize_database
+    
+    # Restart application to pick up database changes
+    log_info "Restarting application..."
+    $DOCKER_COMPOSE -f "$COMPOSE_FILE" restart app
+    sleep 15
     
     # Health check
     local max_attempts=20

@@ -104,9 +104,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isAvailable: agent.isAvailable || true,
         },
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
-      if (error.name === "ZodError") {
+      if (error?.name === "ZodError") {
         res.status(400).json({ message: "Invalid email or password format" });
       } else {
         res.status(500).json({ message: "Internal server error" });
@@ -151,7 +151,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ...customerData,
           sessionId,
           ipAddress,
-          lastSeen: new Date(),
         });
       } else {
         // Generate friendly name if not provided
