@@ -71,15 +71,32 @@ export class DatabaseStorage implements IStorage {
       const existingAgent = await db.select().from(agents).where(eq(agents.email, "agent@helpboard.com")).limit(1);
       
       if (existingAgent.length === 0) {
-        // Create sample agent
+        // Create admin agent with new schema
+        await db.insert(agents).values({
+          name: "Admin User",
+          email: "admin@helpboard.com",
+          password: await bcrypt.hash("admin123", 10),
+          role: "admin",
+          isAvailable: true,
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          passwordChangedAt: new Date(),
+        });
+        
+        // Create regular agent
         await db.insert(agents).values({
           name: "Support Agent",
           email: "agent@helpboard.com",
           password: await bcrypt.hash("password123", 10),
+          role: "agent",
           isAvailable: true,
+          isActive: true,
           createdAt: new Date(),
+          updatedAt: new Date(),
+          passwordChangedAt: new Date(),
         });
-        console.log("Initial agent created");
+        console.log("Initial agents created");
       }
 
       console.log("Database seeding completed");

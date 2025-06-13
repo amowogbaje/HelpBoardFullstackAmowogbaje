@@ -7,8 +7,16 @@ export const agents = pgTable("agents", {
   email: text("email").notNull().unique(),
   name: text("name").notNull(),
   password: text("password").notNull(),
+  role: text("role").notNull().default("agent"), // admin, agent, supervisor
   isAvailable: boolean("is_available").default(true),
+  isActive: boolean("is_active").default(true),
+  department: text("department"),
+  phone: text("phone"),
+  avatar: text("avatar"),
+  lastLoginAt: timestamp("last_login_at"),
+  passwordChangedAt: timestamp("password_changed_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const customers = pgTable("customers", {
@@ -64,6 +72,9 @@ export const sessions = pgTable("sessions", {
 export const insertAgentSchema = createInsertSchema(agents).omit({
   id: true,
   createdAt: true,
+  updatedAt: true,
+  lastLoginAt: true,
+  passwordChangedAt: true,
 });
 
 export const insertCustomerSchema = createInsertSchema(customers).omit({
@@ -91,6 +102,46 @@ export const insertSessionSchema = createInsertSchema(sessions).omit({
 export const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
+});
+
+// Agent management schemas
+export const createAgentSchema = z.object({
+  email: z.string().email(),
+  name: z.string().min(1),
+  password: z.string().min(6),
+  role: z.enum(["admin", "agent", "supervisor"]).default("agent"),
+  department: z.string().optional(),
+  phone: z.string().optional(),
+});
+
+export const updateAgentSchema = z.object({
+  name: z.string().min(1).optional(),
+  email: z.string().email().optional(),
+  role: z.enum(["admin", "agent", "supervisor"]).optional(),
+  department: z.string().optional(),
+  phone: z.string().optional(),
+  isAvailable: z.boolean().optional(),
+  isActive: z.boolean().optional(),
+});
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(6),
+  confirmPassword: z.string().min(6),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
+export const adminUpdateAgentSchema = z.object({
+  name: z.string().min(1).optional(),
+  email: z.string().email().optional(),
+  role: z.enum(["admin", "agent", "supervisor"]).optional(),
+  department: z.string().optional(),
+  phone: z.string().optional(),
+  isAvailable: z.boolean().optional(),
+  isActive: z.boolean().optional(),
+  newPassword: z.string().min(6).optional(),
 });
 
 // Customer initiate schema
@@ -124,3 +175,7 @@ export type InsertSession = z.infer<typeof insertSessionSchema>;
 
 export type LoginRequest = z.infer<typeof loginSchema>;
 export type CustomerInitiateRequest = z.infer<typeof customerInitiateSchema>;
+export type CreateAgentRequest = z.infer<typeof createAgentSchema>;
+export type UpdateAgentRequest = z.infer<typeof updateAgentSchema>;
+export type ChangePasswordRequest = z.infer<typeof changePasswordSchema>;
+export type AdminUpdateAgentRequest = z.infer<typeof adminUpdateAgentSchema>;
