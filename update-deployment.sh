@@ -28,9 +28,9 @@ create_backup() {
     mkdir -p "$backup_dir"
     
     # Backup database
-    if docker-compose -f "$COMPOSE_FILE" ps | grep -q "db.*Up"; then
+    if docker compose -f "$COMPOSE_FILE" ps | grep -q "db.*Up"; then
         log_info "Backing up database..."
-        docker-compose -f "$COMPOSE_FILE" exec -T db pg_dump -U helpboard_user helpboard > "$backup_dir/database.sql"
+        docker compose -f "$COMPOSE_FILE" exec -T db pg_dump -U helpboard_user helpboard > "$backup_dir/database.sql"
         gzip "$backup_dir/database.sql"
         log_info "Database backup created: $backup_dir/database.sql.gz"
     fi
@@ -66,9 +66,9 @@ migrate_database() {
     log_step "Running database migrations..."
     
     # Check if database service is running
-    if ! docker-compose -f "$COMPOSE_FILE" ps | grep -q "db.*Up"; then
+    if ! docker compose -f "$COMPOSE_FILE" ps | grep -q "db.*Up"; then
         log_warn "Database service not running, starting it..."
-        docker-compose -f "$COMPOSE_FILE" up -d db
+        docker compose -f "$COMPOSE_FILE" up -d db
         sleep 10
     fi
     
@@ -98,7 +98,7 @@ restart_services() {
     log_step "Restarting services..."
     
     # Restart application container to pick up changes
-    docker-compose -f "$COMPOSE_FILE" restart app
+    docker compose -f "$COMPOSE_FILE" restart app
     
     # Wait for services to be healthy
     log_info "Waiting for services to restart..."
