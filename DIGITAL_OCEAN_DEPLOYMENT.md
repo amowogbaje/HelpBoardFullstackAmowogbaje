@@ -57,26 +57,45 @@ SESSION_SECRET=your_session_secret_minimum_32_characters
 CORS_ORIGIN=https://helpboard.selfany.com
 TRUST_PROXY=true
 NODE_ENV=production
+DOMAIN=helpboard.selfany.com
 ```
 
-### 4. SSL Certificate Setup
+### 4. Single-Domain Deployment (Recommended)
+
+Use the optimized single-domain deployment script that handles SSL issues:
 
 ```bash
-# Initial SSL certificate generation
-./deploy.sh ssl
+# Make script executable
+chmod +x deploy-single-domain.sh
 
-# Verify SSL installation
-openssl s_client -connect helpboard.selfany.com:443 -servername helpboard.selfany.com
+# Run complete deployment with SSL
+sudo ./deploy-single-domain.sh init
 ```
 
-### 5. Deploy Application
+This script will:
+- Check DNS configuration for helpboard.selfany.com
+- Set up SSL certificates specifically for single domain
+- Handle common certbot/Let's Encrypt issues
+- Deploy the complete application
+- Verify deployment health
+
+### 5. Alternative: Manual SSL Setup
+
+If the automated script fails, use manual SSL setup:
 
 ```bash
-# Run initial deployment
-./deploy.sh init
+# Check DNS first
+dig helpboard.selfany.com
+# Should return: 161.35.58.110
 
-# Verify deployment
-./verify-deployment.sh
+# Generate SSL certificate manually
+sudo ./deploy-single-domain.sh ssl
+
+# Deploy application
+sudo ./deploy-single-domain.sh deploy
+
+# Check status
+sudo ./deploy-single-domain.sh status
 ```
 
 ## Digital Ocean Specific Optimizations
@@ -96,14 +115,14 @@ sudo ufw enable
 
 ### DNS Configuration
 
-Configure your domain's DNS records:
+Configure your domain's DNS records (single domain setup):
 
 ```
 Type    Name                      Value           TTL
 A       helpboard.selfany.com     161.35.58.110   3600
-A       www.helpboard.selfany.com 161.35.58.110   3600
-CNAME   *.helpboard.selfany.com   helpboard.selfany.com   3600
 ```
+
+**Note**: No www subdomain is configured. All traffic will use the single domain `helpboard.selfany.com`.
 
 ### Digital Ocean Volumes (Optional)
 
