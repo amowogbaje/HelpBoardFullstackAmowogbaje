@@ -71,7 +71,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   initializeWebSocket(httpServer);
 
   // Authentication endpoints
-  app.post("/api/login", async (req, res) => {
+  app.post("/api/auth/login", async (req, res) => {
     try {
       const { email, password } = loginSchema.parse(req.body);
       
@@ -94,17 +94,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       res.json({
+        message: "Login successful",
         sessionToken,
         agent: {
           id: agent.id,
           email: agent.email,
           name: agent.name,
-          isAvailable: agent.isAvailable,
+          role: agent.role || "agent",
+          isAvailable: agent.isAvailable || true,
         },
       });
     } catch (error) {
       console.error("Login error:", error);
-      res.status(400).json({ message: "Invalid request data" });
+      if (error.name === "ZodError") {
+        res.status(400).json({ message: "Invalid email or password format" });
+      } else {
+        res.status(500).json({ message: "Internal server error" });
+      }
     }
   });
 
