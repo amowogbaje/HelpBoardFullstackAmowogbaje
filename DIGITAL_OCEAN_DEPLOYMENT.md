@@ -29,7 +29,7 @@ Before starting deployment, ensure:
 ssh root@67.205.138.68
 
 # Download and run the complete setup script
-wget https://raw.githubusercontent.com/your-repo/helpboard/main/complete-setup.sh
+wget https://raw.githubusercontent.com/amowogbaje/HelpBoardFullstackAmowogbaje/main/complete-setup.sh
 chmod +x complete-setup.sh
 sudo ./complete-setup.sh
 ```

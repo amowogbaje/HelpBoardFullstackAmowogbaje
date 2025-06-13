@@ -28,7 +28,7 @@ This comprehensive guide covers Docker-based deployment for HelpBoard, addressin
 **Automated Setup (Recommended):**
 ```bash
 # Download and run the Digital Ocean setup script
-wget https://raw.githubusercontent.com/your-repo/helpboard/main/digital-ocean-setup.sh
+wget https://raw.githubusercontent.com/amowogbaje/HelpBoardFullstackAmowogbaje/main/digital-ocean-setup.sh
 chmod +x digital-ocean-setup.sh
 sudo ./digital-ocean-setup.sh
 ```
