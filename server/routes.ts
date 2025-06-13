@@ -7,13 +7,19 @@ import {
   loginSchema, 
   customerInitiateSchema, 
   insertMessageSchema,
+  type Agent,
   type LoginRequest,
   type CustomerInitiateRequest 
 } from "@shared/schema";
 import { nanoid } from "nanoid";
 
-// Simple session store
-const sessions = new Map<string, { agentId: number; expiresAt: Date }>();
+// Session store interface
+interface SessionData {
+  agentId: number;
+  expiresAt: Date;
+}
+
+const sessions = new Map<string, SessionData>();
 
 // Middleware to check agent authentication
 async function requireAuth(req: any, res: any, next: any) {
@@ -50,9 +56,13 @@ async function requireAuth(req: any, res: any, next: any) {
       return res.status(401).json({ message: "Invalid or expired session" });
     }
     
-    session.lastActivity = new Date();
+    if (session.lastActivity) {
+      session.lastActivity = new Date();
+    }
     req.agentId = session.agentId;
-    req.agent = session.agent;
+    if (session.agent) {
+      req.agent = session.agent;
+    }
   next();
 }
 

@@ -82,32 +82,37 @@ SSL_EMAIL=your-email@example.com
 
 The deployment has been simplified to just two commands that handle everything automatically:
 
-#### Command 1: System Setup (Run Once)
+#### Command 1: Download and Setup
 
 ```bash
 # SSH into your droplet
 ssh root@161.35.58.110
+
+# Clone repository to /opt/helpboard
+git clone https://github.com/amowogbaje/HelpBoardFullstackAmowogbaje.git /opt/helpboard
 cd /opt/helpboard
 
-# Install all dependencies (Docker, Docker Compose, SSL tools, etc.)
-sudo ./simple-deploy.sh setup
+# Download and run setup script
+wget -O quick-setup.sh https://raw.githubusercontent.com/amowogbaje/HelpBoardFullstackAmowogbaje/main/quick-setup.sh
+chmod +x quick-setup.sh
+sudo ./quick-setup.sh
 ```
 
 This command automatically:
-- Installs Docker using the official installation script
-- Resolves docker-compose-plugin issues by installing Docker Compose V2
+- Installs Docker using the official installation script (resolves all docker-compose-plugin issues)
+- Installs Docker Compose V2 with full compatibility
 - Sets up firewall rules (ports 80, 443, SSH)
-- Installs SSL certificate tools
 - Creates environment configuration template
+- Creates deployment script
 
-#### Command 2: Deploy Application
+#### Command 2: Configure and Deploy
 
 ```bash
-# Edit the environment file with your API keys
+# Edit the environment file with your OpenAI API key
 nano .env
 
-# Deploy the complete application
-./simple-deploy.sh deploy
+# Deploy in development mode (stable and reliable)
+./deploy.sh
 ```
 
 This command automatically:
