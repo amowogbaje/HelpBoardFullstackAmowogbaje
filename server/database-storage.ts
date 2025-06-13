@@ -56,6 +56,13 @@ export interface IStorage {
 
   // Auth helpers
   validateAgent(email: string, password: string): Promise<Agent | null>;
+  
+  // Agent management methods
+  updateAgent(id: number, updates: Partial<InsertAgent>): Promise<Agent | undefined>;
+  changeAgentPassword(id: number, currentPassword: string, newPassword: string): Promise<boolean>;
+  getAllAgentsWithStats(): Promise<any[]>;
+  adminUpdateAgent(id: number, updates: any): Promise<Agent | undefined>;
+  deleteAgent(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -253,8 +260,16 @@ export class DatabaseStorage implements IStorage {
           name: "HelpBoard AI Assistant",
           email: "ai@helpboard.com",
           password: "",
+          role: "agent",
           isAvailable: null,
+          isActive: null,
+          department: null,
+          phone: null,
+          avatar: null,
+          lastLoginAt: null,
+          passwordChangedAt: null,
           createdAt: null,
+          updatedAt: null,
         };
       }
       
@@ -378,7 +393,116 @@ export class DatabaseStorage implements IStorage {
     if (!agent) return null;
 
     const isValid = await bcrypt.compare(password, agent.password);
+    if (isValid) {
+      // Update last login time
+      await db.update(agents)
+        .set({ lastLoginAt: new Date() })
+        .where(eq(agents.id, agent.id));
+    }
     return isValid ? agent : null;
+  }
+
+  // Agent management methods
+  async updateAgent(id: number, updates: Partial<InsertAgent>): Promise<Agent | undefined> {
+    const [agent] = await db.update(agents)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(agents.id, id))
+      .returning();
+    return agent || undefined;
+  }
+
+  async changeAgentPassword(id: number, currentPassword: string, newPassword: string): Promise<boolean> {
+    const agent = await this.getAgent(id);
+    if (!agent) return false;
+    
+    const isCurrentValid = await bcrypt.compare(currentPassword, agent.password);
+    if (!isCurrentValid) return false;
+    
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await db.update(agents)
+      .set({ 
+        password: hashedPassword, 
+        passwordChangedAt: new Date(),
+        updatedAt: new Date() 
+      })
+      .where(eq(agents.id, id));
+    
+    return true;
+  }
+
+  async getAllAgentsWithStats(): Promise<any[]> {
+    // Get all agents
+    const allAgents = await db.select().from(agents).orderBy(agents.createdAt);
+    
+    // Get conversation stats for each agent
+    const agentsWithStats = await Promise.all(
+      allAgents.map(async (agent) => {
+        const activeConversations = await db.select({ count: sql<number>`count(*)` })
+          .from(conversations)
+          .where(and(
+            eq(conversations.assignedAgentId, agent.id),
+            eq(conversations.status, "assigned")
+          ));
+        
+        const totalConversations = await db.select({ count: sql<number>`count(*)` })
+          .from(conversations)
+          .where(eq(conversations.assignedAgentId, agent.id));
+        
+        return {
+          ...agent,
+          activeConversations: activeConversations[0]?.count || 0,
+          totalConversations: totalConversations[0]?.count || 0,
+          averageResponseTime: 0,
+        };
+      })
+    );
+    
+    return agentsWithStats;
+  }
+
+  async adminUpdateAgent(id: number, updates: any): Promise<Agent | undefined> {
+    const updateData: any = { ...updates, updatedAt: new Date() };
+    
+    // Hash password if provided
+    if (updates.newPassword) {
+      updateData.password = await bcrypt.hash(updates.newPassword, 10);
+      updateData.passwordChangedAt = new Date();
+      delete updateData.newPassword;
+    }
+    
+    const [agent] = await db.update(agents)
+      .set(updateData)
+      .where(eq(agents.id, id))
+      .returning();
+    return agent || undefined;
+  }
+
+  async deleteAgent(id: number): Promise<boolean> {
+    try {
+      // Check if agent has active conversations
+      const activeConversations = await db.select({ count: sql<number>`count(*)` })
+        .from(conversations)
+        .where(and(
+          eq(conversations.assignedAgentId, id),
+          eq(conversations.status, "assigned")
+        ));
+      
+      if (activeConversations[0]?.count > 0) {
+        throw new Error("Cannot delete agent with active conversations");
+      }
+      
+      // Unassign agent from closed conversations
+      await db.update(conversations)
+        .set({ assignedAgentId: null })
+        .where(eq(conversations.assignedAgentId, id));
+      
+      // Delete the agent
+      const result = await db.delete(agents).where(eq(agents.id, id));
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("Delete agent error:", error);
+      return false;
+    }
   }
 }
 
