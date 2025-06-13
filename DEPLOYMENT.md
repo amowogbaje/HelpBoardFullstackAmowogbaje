@@ -250,9 +250,21 @@ docker-compose -f docker-compose.prod.yml run --rm app npm run db:migrate
 # Build and start all services
 docker-compose -f docker-compose.prod.yml up -d
 
+# Run database migration to ensure schema is current
+npm run db:push
+
 # Verify all services are healthy
 docker-compose -f docker-compose.prod.yml ps
 ```
+
+### Default Credentials
+
+After successful deployment, use these credentials to access the admin dashboard:
+
+- **Admin**: `admin@helpboard.com` / `admin123`
+- **Agent**: `agent@helpboard.com` / `password123`
+
+Access the application at: `https://helpboard.selfany.com`
 
 ### Step 5: Verification
 

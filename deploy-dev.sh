@@ -151,6 +151,15 @@ deploy_application() {
     log_info "Waiting for services to start..."
     sleep 30
     
+    # Run database migration
+    log_info "Running database migration..."
+    if $DOCKER_COMPOSE -f "$COMPOSE_FILE" exec -T db pg_isready -U helpboard_user; then
+        npm run db:push
+        log_info "Database schema updated successfully"
+    else
+        log_warn "Database not ready, skipping migration"
+    fi
+    
     # Health check
     local max_attempts=20
     local attempt=1
