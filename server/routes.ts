@@ -29,40 +29,42 @@ async function requireAuth(req: any, res: any, next: any) {
   }
 
   const token = authHeader.slice(7);
-    let session = sessions.get(token);
-    
-    if (!session) {
-      try {
-        const dbSession = await storage.getSession(token);
-        if (dbSession && dbSession.agentId && (!dbSession.expiresAt || dbSession.expiresAt > new Date())) {
-          const agent = await storage.getAgent(dbSession.agentId);
-          if (agent && agent.isActive) {
-            session = {
-              agentId: dbSession.agentId,
-              agent,
-              expiresAt: dbSession.expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000),
-              lastActivity: new Date()
-            };
-            sessions.set(token, session);
-          }
+  let session = sessions.get(token);
+  
+  // If not in memory, check database
+  if (!session) {
+    try {
+      const dbSession = await storage.getSession(token);
+      if (dbSession && dbSession.agentId && (!dbSession.expiresAt || dbSession.expiresAt > new Date())) {
+        // Verify the agent still exists and is active
+        const agent = await storage.getAgent(dbSession.agentId);
+        if (agent && agent.isActive) {
+          session = { 
+            agentId: dbSession.agentId, 
+            expiresAt: dbSession.expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000) 
+          };
+          sessions.set(token, session);
         }
+      }
+    } catch (error) {
+      console.error("Error checking session:", error);
+    }
+  }
+  
+  if (!session || session.expiresAt < new Date()) {
+    sessions.delete(token);
+    if (session) {
+      // Clean up expired session from database
+      try {
+        await storage.deleteSession(token);
       } catch (error) {
-        console.error("Session lookup error:", error);
+        console.error("Error deleting expired session:", error);
       }
     }
-    
-    if (!session || session.expiresAt <= new Date()) {
-      sessions.delete(token);
-      return res.status(401).json({ message: "Invalid or expired session" });
-    }
-    
-    if (session.lastActivity) {
-      session.lastActivity = new Date();
-    }
-    req.agentId = session.agentId;
-    if (session.agent) {
-      req.agent = session.agent;
-    }
+    return res.status(401).json({ message: "Invalid or expired session" });
+  }
+
+  req.agentId = session.agentId;
   next();
 }
 
@@ -103,15 +105,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const sessionToken = nanoid();
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
       
-      // Enhanced session data structure
-      const sessionData = {
-        agentId: agent.id,
-        agent,
-        expiresAt,
-        lastActivity: new Date()
-      };
-      
-      sessions.set(sessionToken, sessionData);
+      sessions.set(sessionToken, { agentId: agent.id, expiresAt });
       
       // Store session in database
       await storage.createSession({
