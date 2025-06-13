@@ -80,7 +80,7 @@ check_dns() {
     
     # Check if domain resolves to correct IP
     RESOLVED_IP=$(dig +short $DOMAIN | tail -n1)
-    EXPECTED_IP="161.35.58.110"
+    EXPECTED_IP="67.205.138.68"
     
     if [ "$RESOLVED_IP" = "$EXPECTED_IP" ]; then
         log_info "DNS correctly resolves $DOMAIN to $EXPECTED_IP"

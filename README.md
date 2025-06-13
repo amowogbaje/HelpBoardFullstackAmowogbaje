@@ -17,7 +17,7 @@ A comprehensive customer support platform featuring 90% AI-powered responses wit
 
 ```bash
 # Clone repository
-git clone https://github.com/your-org/helpboard.git
+git clone https://github.com/amowogbaje/HelpBoardFullstackAmowogbaje.git
 cd helpboard
 
 # Install dependencies
@@ -40,7 +40,7 @@ chmod +x digital-ocean-setup.sh
 sudo ./digital-ocean-setup.sh
 
 # 2. Clone and configure
-git clone https://github.com/your-org/helpboard.git /opt/helpboard
+git clone https://github.com/amowogbaje/HelpBoardFullstackAmowogbaje.git /opt/helpboard
 cd /opt/helpboard
 cp .env.example .env
 # Configure your .env file

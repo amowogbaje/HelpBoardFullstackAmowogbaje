@@ -149,8 +149,7 @@ Configure A records for your domain:
 
 ```
 Type    Name                    Value
-A       helpboard.selfany.com   161.35.58.110
-A       www.helpboard.selfany.com   161.35.58.110
+A       helpboard.selfany.com   67.205.138.68
 ```
 
 ### SSL Certificate Setup with Let's Encrypt
@@ -203,7 +202,7 @@ echo "0 3 * * * /path/to/your/app/renew-ssl.sh" | crontab -
 
 ```bash
 # Clone repository
-git clone https://github.com/your-org/helpboard.git
+git clone https://github.com/amowogbaje/HelpBoardFullstackAmowogbaje.git
 cd helpboard
 
 # Create environment file
@@ -333,7 +332,7 @@ nslookup helpboard.selfany.com
 dig helpboard.selfany.com
 
 # Check if domain points to correct IP
-curl -H "Host: helpboard.selfany.com" http://161.35.58.110/health
+curl -H "Host: helpboard.selfany.com" http://67.205.138.68/health
 ```
 
 ### Logs and Debugging

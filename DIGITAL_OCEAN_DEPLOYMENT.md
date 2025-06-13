@@ -1,6 +1,6 @@
 # HelpBoard Digital Ocean Production Deployment Guide
 
-This guide provides step-by-step instructions for deploying HelpBoard on Digital Ocean infrastructure, addressing the specific requirements for domain `helpboard.selfany.com` and IP `161.35.58.110`.
+This guide provides step-by-step instructions for deploying HelpBoard on Digital Ocean infrastructure, addressing the specific requirements for domain `helpboard.selfany.com` and IP `67.205.138.68`.
 
 ## Quick Start for Digital Ocean
 
@@ -8,7 +8,7 @@ This guide provides step-by-step instructions for deploying HelpBoard on Digital
 
 Before starting deployment, ensure:
 - [ ] Digital Ocean droplet created (Ubuntu 22.04 LTS)
-- [ ] DNS A record: `helpboard.selfany.com` → `161.35.58.110`
+- [ ] DNS A record: `helpboard.selfany.com` → `67.205.138.68`
 - [ ] SSH access to droplet configured
 - [ ] Required API keys available (OpenAI, etc.)
 
@@ -16,7 +16,7 @@ Before starting deployment, ensure:
 - **Size**: Regular (4GB RAM, 2 vCPU, 80GB SSD) - $24/month
 - **Image**: Ubuntu 22.04 LTS x64
 - **Region**: Choose closest to your users (e.g., NYC, SFO, LON)
-- **IP**: 161.35.58.110 (your assigned IP)
+- **IP**: 67.205.138.68 (your assigned IP)
 - **Additional Options**: 
   - Enable monitoring
   - Add SSH keys
@@ -26,7 +26,7 @@ Before starting deployment, ensure:
 
 ```bash
 # SSH into your droplet
-ssh root@161.35.58.110
+ssh root@67.205.138.68
 
 # Download and run the complete setup script
 wget https://raw.githubusercontent.com/your-repo/helpboard/main/complete-setup.sh
@@ -114,7 +114,7 @@ sudo ./deploy-single-domain.sh status
 ```
 
 **Quick SSL Issue Resolution:**
-1. **DNS Problems**: Verify `dig helpboard.selfany.com` returns `161.35.58.110`
+1. **DNS Problems**: Verify `dig helpboard.selfany.com` returns `67.205.138.68`
 2. **Firewall Issues**: Ensure ports 80/443 are open with `sudo ufw status`
 3. **Rate Limits**: Wait 1 hour if Let's Encrypt rate limited
 4. **Certificate Conflicts**: Clean with `sudo ./ssl-troubleshoot.sh clean`
@@ -140,7 +140,7 @@ Configure your domain's DNS records (single domain setup):
 
 ```
 Type    Name                      Value           TTL
-A       helpboard.selfany.com     161.35.58.110   3600
+A       helpboard.selfany.com     67.205.138.68   3600
 ```
 
 **Note**: No www subdomain is configured. All traffic will use the single domain `helpboard.selfany.com`.
@@ -183,7 +183,7 @@ dig helpboard.selfany.com
 nslookup helpboard.selfany.com
 
 # Test from different locations
-curl -H "Host: helpboard.selfany.com" http://161.35.58.110/health
+curl -H "Host: helpboard.selfany.com" http://67.205.138.68/health
 ```
 
 ### SSL Certificate Issues
@@ -288,8 +288,8 @@ sudo systemctl start do-agent
 docker-compose -f monitoring.yml up -d
 
 # Access monitoring
-# Prometheus: http://161.35.58.110:9090
-# Grafana: http://161.35.58.110:3000 (admin/admin123)
+# Prometheus: http://67.205.138.68:9090
+# Grafana: http://67.205.138.68:3000 (admin/admin123)
 ```
 
 ## Backup Strategy for Digital Ocean
@@ -308,7 +308,7 @@ echo "0 2 * * * cd /opt/helpboard && ./deploy.sh backup" | crontab -
 
 ```bash
 # Create droplet snapshot
-doctl compute droplet-action snapshot 161.35.58.110 --snapshot-name "helpboard-$(date +%Y%m%d)"
+doctl compute droplet-action snapshot 67.205.138.68 --snapshot-name "helpboard-$(date +%Y%m%d)"
 
 # Create volume snapshot
 doctl compute volume-action snapshot helpboard-data --snapshot-name "helpboard-data-$(date +%Y%m%d)"
@@ -327,7 +327,7 @@ doctl compute load-balancer create \
   --forwarding-rules entry_protocol:https,entry_port:443,target_protocol:http,target_port:80 \
   --health-check protocol:http,port:80,path:/health \
   --region nyc1 \
-  --droplet-ids 161.35.58.110
+  --droplet-ids 67.205.138.68
 ```
 
 ### Horizontal Scaling

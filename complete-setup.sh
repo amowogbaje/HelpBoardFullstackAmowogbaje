@@ -7,9 +7,9 @@ set -e
 
 # Configuration
 DOMAIN="helpboard.selfany.com"
-IP="161.35.58.110"
+IP="67.205.138.68"
 APP_DIR="/opt/helpboard"
-REPO_URL="https://github.com/your-org/helpboard.git"
+REPO_URL="https://github.com/amowogbaje/HelpBoardFullstackAmowogbaje.git"
 
 # Colors
 RED='\033[0;31m'
