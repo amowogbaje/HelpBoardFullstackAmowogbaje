@@ -139,6 +139,9 @@ HelpBoard is a comprehensive customer support platform featuring 90% AI-powered 
 ```
 Changelog:
 - June 14, 2025. Initial setup
+- June 14, 2025. Created comprehensive two-phase deployment system for Digital Ocean
+- June 14, 2025. Fixed SSL troubleshooting script syntax errors and added clean ssl-fix.sh
+- June 14, 2025. Added automatic git configuration to deployment scripts
 ```
 
 ## User Preferences
