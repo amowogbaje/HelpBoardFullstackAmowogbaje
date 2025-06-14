@@ -1,4 +1,6 @@
-import express, type { Express } from "express";
+import express from "express";
+import type { Express } from "express";
+
 import { createServer, type Server } from "http";
 import { storage } from "./database-storage";
 import { aiService } from "./ai-service";
