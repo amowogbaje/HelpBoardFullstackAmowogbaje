@@ -199,9 +199,22 @@ full_deployment() {
     
     check_prerequisites
     
-    # Setup SSL
+    # Setup SSL with better error handling
     if ! setup_ssl; then
-        log_warn "SSL setup failed, continuing anyway..."
+        log_warn "SSL setup failed, trying alternative method..."
+        if [ -x "./fix-ssl.sh" ]; then
+            ./fix-ssl.sh
+        else
+            log_warn "Creating self-signed certificates as fallback..."
+            mkdir -p ssl
+            openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+                -keyout ssl/privkey.pem \
+                -out ssl/fullchain.pem \
+                -subj "/C=US/ST=State/L=City/O=HelpBoard/OU=IT/CN=helpboard.selfany.com"
+            chmod 644 ssl/fullchain.pem
+            chmod 600 ssl/privkey.pem
+            log_info "Self-signed certificates created"
+        fi
     fi
     
     # Deploy application
