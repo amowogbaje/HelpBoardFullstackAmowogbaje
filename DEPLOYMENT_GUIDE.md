@@ -19,6 +19,7 @@ Upload all HelpBoard files to your droplet at `/opt/helpboard/` or clone from re
 ```bash
 ssh root@your-droplet-ip
 cd /opt/helpboard
+git pull origin main
 chmod +x setup-phase.sh
 ./setup-phase.sh
 ```
@@ -26,6 +27,7 @@ chmod +x setup-phase.sh
 ### What Setup Does:
 - ✅ Cleans any previous installations completely
 - ✅ Installs Docker and Docker Compose (latest versions)
+- ✅ Configures git with your credentials automatically
 - ✅ Configures firewall (ports 22, 80, 443)
 - ✅ Generates secure passwords automatically
 - ✅ Creates `.env` template with security configurations
@@ -50,6 +52,7 @@ OPENAI_API_KEY=your_actual_openai_api_key_here
 ### Step 1: Run Deployment Phase
 ```bash
 cd /opt/helpboard
+chmod +x deployment-phase.sh
 ./deployment-phase.sh
 ```
 
@@ -82,6 +85,25 @@ All containers should be running:
 - `helpboard_db` (PostgreSQL)
 - `helpboard_app` (Node.js application)
 - `helpboard_nginx` (Reverse proxy)
+
+## Additional Tools
+
+### SSL Troubleshooting
+If SSL certificate generation fails, use the dedicated SSL fix tool:
+```bash
+cd /opt/helpboard
+chmod +x ssl-fix.sh
+./ssl-fix.sh check    # Diagnose SSL issues
+./ssl-fix.sh fix      # Fix SSL problems
+./ssl-fix.sh generate # Generate new certificates
+```
+
+### Git Configuration
+Git credentials are automatically configured during setup:
+- Email: amowogbajegideon@gmail.com
+- Name: Gideon Amowogbaje
+
+This eliminates manual git configuration during deployment.
 
 ## Troubleshooting
 
