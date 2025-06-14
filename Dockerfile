@@ -3,33 +3,36 @@ FROM node:20-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat python3 make g++
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
+COPY package-lock.json ./
 
-# Install all dependencies (including dev dependencies for build)
-RUN npm ci
+# Install dependencies with exact versions
+RUN npm ci --only=production --ignore-scripts
+
+# Development dependencies for build
+FROM base AS build-deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+COPY package*.json ./
+COPY package-lock.json ./
+RUN npm ci --ignore-scripts
 
 # Build the application
 FROM base AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+COPY --from=build-deps /app/node_modules ./node_modules
 COPY . .
 
 # Set environment variables for build
 ENV NODE_ENV=production
 ENV VITE_API_URL=""
 
-# Ensure directories exist and build
-RUN mkdir -p client/dist server/dist
+# Build the application
 RUN npm run build
-
-# Verify build outputs exist
-RUN ls -la && ls -la dist/ || echo "Build verification..."
-RUN test -d dist/public || (echo "Frontend build failed - dist/public not found" && exit 1)
-RUN test -f dist/index.js || (echo "Backend build failed - dist/index.js not found" && exit 1)
 
 # Production image
 FROM node:20-alpine AS runner
@@ -42,6 +45,7 @@ RUN adduser --system --uid 1001 helpboard
 # Install production dependencies
 COPY --from=deps --chown=helpboard:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=helpboard:nodejs /app/dist ./dist
+COPY --from=builder --chown=helpboard:nodejs /app/client/dist ./client/dist
 COPY --from=builder --chown=helpboard:nodejs /app/client/public ./client/public
 COPY --from=builder --chown=helpboard:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=helpboard:nodejs /app/drizzle.config.ts ./drizzle.config.ts

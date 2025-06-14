@@ -7,7 +7,7 @@ set -e
 
 # Configuration
 DOMAIN="helpboard.selfany.com"
-IP="67.205.138.68"
+IP="161.35.58.110"
 COMPOSE_FILE="docker-compose.prod.yml"
 
 # Colors

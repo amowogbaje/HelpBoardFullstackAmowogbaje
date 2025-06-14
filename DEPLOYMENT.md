@@ -16,49 +16,34 @@ This comprehensive guide covers Docker-based deployment for HelpBoard, addressin
 
 ### System Requirements
 
-**Digital Ocean Droplet Specifications:**
-- Minimum: 2GB RAM, 1 vCPU, 50GB SSD (Basic Droplet)
-- Recommended: 4GB RAM, 2 vCPU, 80GB SSD (Regular Droplet)
-- OS: Ubuntu 22.04 LTS (recommended for Digital Ocean)
 - Docker Engine 20.10+
 - Docker Compose 2.0+
+- Minimum 2GB RAM
+- 20GB available disk space
+- Ubuntu 20.04+ or CentOS 8+ (recommended)
 
-### Digital Ocean Droplet Setup
+### Server Preparation
 
-**Automated Setup (Recommended):**
-```bash
-# Download and run the Digital Ocean setup script
-wget https://raw.githubusercontent.com/amowogbaje/HelpBoardFullstackAmowogbaje/main/digital-ocean-setup.sh
-chmod +x digital-ocean-setup.sh
-sudo ./digital-ocean-setup.sh
-```
-
-**Manual Setup:**
 ```bash
 # Update system packages
 sudo apt update && sudo apt upgrade -y
 
-# Install essential packages
-sudo apt install -y curl wget gnupg2 software-properties-common apt-transport-https ca-certificates lsb-release ufw fail2ban
+# Install Docker
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
 
-# Install Docker (Digital Ocean optimized)
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt update
-sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-# Configure Digital Ocean firewall
-sudo ufw --force reset
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-sudo ufw allow ssh
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-sudo ufw --force enable
+# Install Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
 
 # Add user to docker group
 sudo usermod -aG docker $USER
 newgrp docker
+
+# Configure firewall for ports 80, 443
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw enable
 ```
 
 ## Development vs Production Dependencies
@@ -149,7 +134,8 @@ Configure A records for your domain:
 
 ```
 Type    Name                    Value
-A       helpboard.selfany.com   67.205.138.68
+A       helpboard.selfany.com   161.35.58.110
+A       www.helpboard.selfany.com   161.35.58.110
 ```
 
 ### SSL Certificate Setup with Let's Encrypt
@@ -202,7 +188,7 @@ echo "0 3 * * * /path/to/your/app/renew-ssl.sh" | crontab -
 
 ```bash
 # Clone repository
-git clone https://github.com/amowogbaje/HelpBoardFullstackAmowogbaje.git
+git clone https://github.com/your-org/helpboard.git
 cd helpboard
 
 # Create environment file
@@ -332,7 +318,7 @@ nslookup helpboard.selfany.com
 dig helpboard.selfany.com
 
 # Check if domain points to correct IP
-curl -H "Host: helpboard.selfany.com" http://67.205.138.68/health
+curl -H "Host: helpboard.selfany.com" http://161.35.58.110/health
 ```
 
 ### Logs and Debugging
