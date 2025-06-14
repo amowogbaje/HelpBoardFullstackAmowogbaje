@@ -123,6 +123,17 @@ install_system_packages() {
     log_success "System packages installed"
 }
 
+# Configure git for repository operations
+configure_git() {
+    log_step "Configuring git..."
+    
+    # Set global git configuration
+    git config --global user.email "amowogbajegideon@gmail.com"
+    git config --global user.name "Gideon Amowogbaje"
+    
+    log_success "Git configuration completed"
+}
+
 # Install Docker and Docker Compose
 install_docker() {
     log_step "Installing Docker and Docker Compose..."
@@ -294,6 +305,7 @@ main() {
     verify_do_environment
     clean_previous_installation
     install_system_packages
+    configure_git
     install_docker
     configure_firewall
     clone_repository

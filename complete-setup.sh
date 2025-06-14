@@ -114,6 +114,17 @@ setup_firewall() {
     log_info "Firewall configured"
 }
 
+# Configure git for repository operations
+configure_git() {
+    log_info "Configuring git..."
+    
+    # Set global git configuration
+    git config --global user.email "amowogbajegideon@gmail.com"
+    git config --global user.name "Gideon Amowogbaje"
+    
+    log_info "Git configuration completed"
+}
+
 # Setup application directory and clone repository
 setup_application() {
     log_info "Setting up application directory..."
@@ -278,7 +289,7 @@ show_summary() {
     echo "   ./deploy-dev.sh deploy"
     echo
     echo "4. Check deployment status:"
-    echo "   ./deploy-fixed.sh status"
+    echo "   ./verify-deployment.sh all"
     echo
     echo "=== Important Notes ==="
     echo "- Your application will be available at: https://$DOMAIN"
@@ -294,6 +305,7 @@ main() {
     
     check_root
     update_system
+    configure_git
     install_nodejs
     install_docker
     setup_firewall

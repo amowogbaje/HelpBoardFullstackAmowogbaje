@@ -22,10 +22,10 @@ test_dns() {
     
     local resolved_ip=$(dig +short $DOMAIN | tail -n1)
     if [ "$resolved_ip" = "$IP" ]; then
-        log_info "✅ DNS correctly resolves to $IP"
+        log_info " DNS correctly resolves to $IP"
         return 0
     else
-        log_error "❌ DNS resolution failed"
+        log_error " DNS resolution failed"
         log_error "Expected: $IP, Got: $resolved_ip"
         return 1
     fi
@@ -37,18 +37,18 @@ test_ports() {
     
     # Test port 80
     if timeout 5 nc -z $IP 80 2>/dev/null; then
-        log_info "✅ Port 80 is accessible"
+        log_info " Port 80 is accessible"
     else
-        log_error "❌ Port 80 is not accessible"
+        log_error " Port 80 is not accessible"
         log_error "Check firewall: sudo ufw allow 80"
         return 1
     fi
     
     # Test port 443
     if timeout 5 nc -z $IP 443 2>/dev/null; then
-        log_info "✅ Port 443 is accessible"
+        log_info " Port 443 is accessible"
     else
-        log_warn "⚠️ Port 443 is not accessible (expected before SSL setup)"
+        log_warn " Port 443 is not accessible (expected before SSL setup)"
     fi
 }
 
@@ -64,11 +64,11 @@ check_rate_limits() {
     log_info "Certificates in last week: $recent_count"
     
     if [ "$recent_count" -gt 5 ]; then
-        log_warn "⚠️ Rate limit may be reached ($recent_count certificates in last week)"
+        log_warn "Rate limit may be reached - ${recent_count} certificates in last week"
         log_warn "Consider waiting or using staging environment"
         return 1
     else
-        log_info "✅ Rate limits OK"
+        log_info "Rate limits OK"
         return 0
     fi
 }
@@ -79,16 +79,16 @@ test_http() {
     
     # Test direct IP access
     if timeout 10 curl -s -o /dev/null -w "%{http_code}" "http://$IP/" | grep -q "200\|301\|302"; then
-        log_info "✅ HTTP access via IP works"
+        log_info " HTTP access via IP works"
     else
-        log_warn "⚠️ HTTP access via IP failed"
+        log_warn " HTTP access via IP failed"
     fi
     
     # Test domain access
     if timeout 10 curl -s -o /dev/null -w "%{http_code}" "http://$DOMAIN/" | grep -q "200\|301\|302"; then
-        log_info "✅ HTTP access via domain works"
+        log_info " HTTP access via domain works"
     else
-        log_error "❌ HTTP access via domain failed"
+        log_error " HTTP access via domain failed"
         return 1
     fi
 }
@@ -103,9 +103,9 @@ check_existing_certs() {
         # Check certificate validity
         local cert_domain=$(openssl x509 -in ssl/fullchain.pem -text -noout | grep -A1 "Subject Alternative Name" | grep -o "$DOMAIN" || echo "")
         if [ "$cert_domain" = "$DOMAIN" ]; then
-            log_info "✅ Certificate is valid for $DOMAIN"
+            log_info " Certificate is valid for $DOMAIN"
         else
-            log_warn "⚠️ Certificate may not be valid for $DOMAIN"
+            log_warn " Certificate may not be valid for $DOMAIN"
         fi
         
         # Check expiration
@@ -115,9 +115,9 @@ check_existing_certs() {
         local days_until_expiry=$(( (expiry_epoch - current_epoch) / 86400 ))
         
         if [ $days_until_expiry -gt 30 ]; then
-            log_info "✅ Certificate expires in $days_until_expiry days"
+            log_info "Certificate expires in $days_until_expiry days"
         else
-            log_warn "⚠️ Certificate expires in $days_until_expiry days (consider renewal)"
+            log_warn "Certificate expires in $days_until_expiry days - consider renewal"
         fi
     else
         log_info "No existing certificates found"
@@ -138,14 +138,14 @@ fix_firewall() {
         sudo ufw allow 80/tcp >/dev/null 2>&1  # HTTP
         sudo ufw allow 443/tcp >/dev/null 2>&1 # HTTPS
         
-        log_info "✅ Firewall rules updated"
+        log_info " Firewall rules updated"
     fi
     
     # Check iptables (Digital Ocean droplets)
     if command -v iptables >/dev/null 2>&1; then
         local port80_rule=$(sudo iptables -L INPUT -n | grep ":80 " || echo "")
         if [ -z "$port80_rule" ]; then
-            log_warn "⚠️ No explicit iptables rule for port 80"
+            log_warn " No explicit iptables rule for port 80"
         fi
     fi
 }
@@ -163,7 +163,7 @@ clean_ssl_setup() {
     sudo rm -rf ssl/* certbot/*
     mkdir -p ssl certbot/www certbot/conf
     
-    log_info "✅ SSL directories cleaned"
+    log_info " SSL directories cleaned"
 }
 
 # Create minimal nginx for ACME challenge
@@ -202,12 +202,12 @@ EOF
     
     # Test ACME server
     if curl -s "http://$DOMAIN/" | grep -q "ACME Test Server Ready"; then
-        log_info "✅ ACME challenge server is working"
+        log_info " ACME challenge server is working"
         docker stop nginx-acme-test && docker rm nginx-acme-test
         rm nginx-acme-test.conf
         return 0
     else
-        log_error "❌ ACME challenge server failed"
+        log_error " ACME challenge server failed"
         docker logs nginx-acme-test
         docker stop nginx-acme-test && docker rm nginx-acme-test
         rm nginx-acme-test.conf
@@ -263,11 +263,11 @@ run_diagnostics() {
     
     # Summary
     if [ $issues -eq 0 ]; then
-        log_info "🎉 All diagnostics passed! SSL generation should work."
+        log_info "All diagnostics passed! SSL generation should work."
         log_info "Run: sudo ./deploy-single-domain.sh ssl"
         return 0
     else
-        log_error "❌ Found $issues issue(s) that need to be resolved first"
+        log_error "Found $issues issues that need to be resolved first"
         return 1
     fi
 }
@@ -286,7 +286,7 @@ auto_fix() {
     log_info "Waiting 30 seconds for any recent DNS changes to propagate..."
     sleep 30
     
-    log_info "✅ Automatic fixes completed"
+    log_info " Automatic fixes completed"
     log_info "Re-run diagnostics to verify: ./ssl-troubleshoot.sh"
 }
 

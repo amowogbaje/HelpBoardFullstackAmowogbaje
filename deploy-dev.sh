@@ -202,8 +202,8 @@ full_deployment() {
     # Setup SSL with better error handling
     if ! setup_ssl; then
         log_warn "SSL setup failed, trying alternative method..."
-        if [ -x "./fix-ssl.sh" ]; then
-            ./fix-ssl.sh
+        if [ -x "./ssl-fix.sh" ]; then
+            ./ssl-fix.sh fix
         else
             log_warn "Creating self-signed certificates as fallback..."
             mkdir -p ssl
