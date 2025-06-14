@@ -151,6 +151,27 @@ deploy_application() {
     log_info "Waiting for services to start..."
     sleep 30
     
+    # Run database migration
+    log_info "Running database migration..."
+    if $DOCKER_COMPOSE -f "$COMPOSE_FILE" exec -T db pg_isready -U helpboard_user; then
+        # Wait a bit more for database to be fully ready
+        sleep 10
+        
+        # First, ensure database schema is created
+        log_info "Creating database schema..."
+        npm run db:push
+        
+        # Verify tables were created
+        if $DOCKER_COMPOSE -f "$COMPOSE_FILE" exec -T db psql -U helpboard_user -d helpboard -c "\dt" | grep -q "agents"; then
+            log_info "Database schema created successfully"
+        else
+            log_error "Database schema creation failed"
+            return 1
+        fi
+    else
+        log_warn "Database not ready, skipping migration"
+    fi
+    
     # Health check
     local max_attempts=20
     local attempt=1
@@ -178,9 +199,22 @@ full_deployment() {
     
     check_prerequisites
     
-    # Setup SSL
+    # Setup SSL with better error handling
     if ! setup_ssl; then
-        log_warn "SSL setup failed, continuing anyway..."
+        log_warn "SSL setup failed, trying alternative method..."
+        if [ -x "./fix-ssl.sh" ]; then
+            ./fix-ssl.sh
+        else
+            log_warn "Creating self-signed certificates as fallback..."
+            mkdir -p ssl
+            openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+                -keyout ssl/privkey.pem \
+                -out ssl/fullchain.pem \
+                -subj "/C=US/ST=State/L=City/O=HelpBoard/OU=IT/CN=helpboard.selfany.com"
+            chmod 644 ssl/fullchain.pem
+            chmod 600 ssl/privkey.pem
+            log_info "Self-signed certificates created"
+        fi
     fi
     
     # Deploy application
