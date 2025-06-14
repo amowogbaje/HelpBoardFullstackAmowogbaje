@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Comprehensive diagnosis and fix for database and SSL issues
-# This script checks everything and fixes problems systematically
+# Comprehensive diagnosis and fix for database and SSL issues on Digital Ocean droplet
+# This script is specifically designed for production deployment on DO infrastructure
 
 set -e
 
@@ -377,9 +377,44 @@ show_comprehensive_status() {
     echo "Agent: agent@helpboard.com / password123"
 }
 
+# Check Digital Ocean environment
+check_do_environment() {
+    log_step "Checking Digital Ocean droplet environment..."
+    
+    # Check if running on DO droplet
+    if curl -s --connect-timeout 2 http://169.254.169.254/metadata/v1/id > /dev/null 2>&1; then
+        local droplet_id=$(curl -s http://169.254.169.254/metadata/v1/id)
+        log_success "Running on DO droplet (ID: $droplet_id)"
+    else
+        log_info "Not running on DO droplet or metadata not accessible"
+    fi
+    
+    # Check available memory and disk space
+    local memory=$(free -h | awk '/^Mem:/ {print $2}')
+    local disk=$(df -h / | awk 'NR==2 {print $4}')
+    log_info "Available memory: $memory"
+    log_info "Available disk space: $disk"
+    
+    # Check if required packages are installed
+    if command -v docker > /dev/null 2>&1; then
+        log_success "Docker is installed"
+    else
+        log_error "Docker is not installed"
+        return 1
+    fi
+    
+    if command -v ufw > /dev/null 2>&1; then
+        log_info "Firewall status:"
+        sudo ufw status
+    fi
+}
+
 # Main execution
 main() {
-    log_info "Starting comprehensive diagnosis and fix..."
+    log_info "Starting comprehensive diagnosis and fix for Digital Ocean droplet..."
+    
+    # Check DO environment first
+    check_do_environment
     
     # Check database container
     if ! check_database_container; then
@@ -406,7 +441,8 @@ main() {
     # Show final status
     show_comprehensive_status
     
-    log_success "Comprehensive fix completed!"
+    log_success "Digital Ocean droplet deployment fix completed!"
+    log_info "Your HelpBoard application should now be accessible at https://$DOMAIN"
 }
 
 main
