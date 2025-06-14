@@ -289,7 +289,7 @@ show_summary() {
     echo "   ./deploy-dev.sh deploy"
     echo
     echo "4. Check deployment status:"
-    echo "   ./deploy-fixed.sh status"
+    echo "   ./verify-deployment.sh all"
     echo
     echo "=== Important Notes ==="
     echo "- Your application will be available at: https://$DOMAIN"
