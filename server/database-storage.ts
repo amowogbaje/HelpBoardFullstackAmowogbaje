@@ -56,6 +56,13 @@ export interface IStorage {
 
   // Auth helpers
   validateAgent(email: string, password: string): Promise<Agent | null>;
+  
+  // Agent management methods
+  updateAgent(id: number, updates: Partial<InsertAgent>): Promise<Agent | undefined>;
+  changeAgentPassword(id: number, currentPassword: string, newPassword: string): Promise<boolean>;
+  getAllAgentsWithStats(): Promise<any[]>;
+  adminUpdateAgent(id: number, updates: any): Promise<Agent | undefined>;
+  deleteAgent(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -67,19 +74,80 @@ export class DatabaseStorage implements IStorage {
     try {
       console.log("Seeding initial data...");
       
-      // Check if agent already exists
-      const existingAgent = await db.select().from(agents).where(eq(agents.email, "agent@helpboard.com")).limit(1);
+      // Check if any agents exist
+      const existingAgents = await db.select().from(agents).limit(1);
       
-      if (existingAgent.length === 0) {
-        // Create sample agent
-        await db.insert(agents).values({
-          name: "Support Agent",
-          email: "agent@helpboard.com",
-          password: await bcrypt.hash("password123", 10),
-          isAvailable: true,
-          createdAt: new Date(),
-        });
-        console.log("Initial agent created");
+      if (existingAgents.length === 0) {
+        const hashedPassword = await bcrypt.hash("admin123", 10);
+        
+        try {
+          // Try new schema format first (for updated databases)
+          await db.insert(agents).values({
+            name: "Admin User",
+            email: "admin@helpboard.com", 
+            password: hashedPassword,
+            role: "admin",
+            isAvailable: true,
+            isActive: true,
+            department: "Administration", 
+            phone: "+1-555-0100",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            passwordChangedAt: new Date(),
+          });
+          
+          console.log("Created admin with new schema");
+          
+        } catch (error: any) {
+          // If new schema fails, try basic schema (for older databases)
+          if (error.message?.includes('column') && error.message?.includes('does not exist')) {
+            console.log("New schema columns not available, using basic schema");
+            await db.insert(agents).values({
+              name: "Admin User",
+              email: "admin@helpboard.com",
+              password: hashedPassword,
+              isAvailable: true,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+            console.log("Created admin with basic schema");
+          } else {
+            throw error;
+          }
+        }
+        
+        try {
+          // Try creating regular agent with new schema
+          await db.insert(agents).values({
+            name: "Support Agent",
+            email: "agent@helpboard.com",
+            password: await bcrypt.hash("password123", 10),
+            role: "agent",
+            isAvailable: true,
+            isActive: true,
+            department: "Customer Support",
+            phone: "+1-555-0200",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            passwordChangedAt: new Date(),
+          });
+        } catch (error: any) {
+          // Fallback to basic schema if needed
+          if (error.message?.includes('column') && error.message?.includes('does not exist')) {
+            await db.insert(agents).values({
+              name: "Support Agent",
+              email: "agent@helpboard.com",
+              password: await bcrypt.hash("password123", 10),
+              isAvailable: true,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            });
+          } else {
+            throw error;
+          }
+        }
+        
+        console.log("Initial agents created");
       }
 
       console.log("Database seeding completed");
@@ -236,8 +304,16 @@ export class DatabaseStorage implements IStorage {
           name: "HelpBoard AI Assistant",
           email: "ai@helpboard.com",
           password: "",
+          role: "agent",
           isAvailable: null,
+          isActive: null,
+          department: null,
+          phone: null,
+          avatar: null,
+          lastLoginAt: null,
+          passwordChangedAt: null,
           createdAt: null,
+          updatedAt: null,
         };
       }
       
@@ -361,7 +437,116 @@ export class DatabaseStorage implements IStorage {
     if (!agent) return null;
 
     const isValid = await bcrypt.compare(password, agent.password);
+    if (isValid) {
+      // Update last login time
+      await db.update(agents)
+        .set({ lastLoginAt: new Date() })
+        .where(eq(agents.id, agent.id));
+    }
     return isValid ? agent : null;
+  }
+
+  // Agent management methods
+  async updateAgent(id: number, updates: Partial<InsertAgent>): Promise<Agent | undefined> {
+    const [agent] = await db.update(agents)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(agents.id, id))
+      .returning();
+    return agent || undefined;
+  }
+
+  async changeAgentPassword(id: number, currentPassword: string, newPassword: string): Promise<boolean> {
+    const agent = await this.getAgent(id);
+    if (!agent) return false;
+    
+    const isCurrentValid = await bcrypt.compare(currentPassword, agent.password);
+    if (!isCurrentValid) return false;
+    
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await db.update(agents)
+      .set({ 
+        password: hashedPassword, 
+        passwordChangedAt: new Date(),
+        updatedAt: new Date() 
+      })
+      .where(eq(agents.id, id));
+    
+    return true;
+  }
+
+  async getAllAgentsWithStats(): Promise<any[]> {
+    // Get all agents
+    const allAgents = await db.select().from(agents).orderBy(agents.createdAt);
+    
+    // Get conversation stats for each agent
+    const agentsWithStats = await Promise.all(
+      allAgents.map(async (agent) => {
+        const activeConversations = await db.select({ count: sql<number>`count(*)` })
+          .from(conversations)
+          .where(and(
+            eq(conversations.assignedAgentId, agent.id),
+            eq(conversations.status, "assigned")
+          ));
+        
+        const totalConversations = await db.select({ count: sql<number>`count(*)` })
+          .from(conversations)
+          .where(eq(conversations.assignedAgentId, agent.id));
+        
+        return {
+          ...agent,
+          activeConversations: activeConversations[0]?.count || 0,
+          totalConversations: totalConversations[0]?.count || 0,
+          averageResponseTime: 0,
+        };
+      })
+    );
+    
+    return agentsWithStats;
+  }
+
+  async adminUpdateAgent(id: number, updates: any): Promise<Agent | undefined> {
+    const updateData: any = { ...updates, updatedAt: new Date() };
+    
+    // Hash password if provided
+    if (updates.newPassword) {
+      updateData.password = await bcrypt.hash(updates.newPassword, 10);
+      updateData.passwordChangedAt = new Date();
+      delete updateData.newPassword;
+    }
+    
+    const [agent] = await db.update(agents)
+      .set(updateData)
+      .where(eq(agents.id, id))
+      .returning();
+    return agent || undefined;
+  }
+
+  async deleteAgent(id: number): Promise<boolean> {
+    try {
+      // Check if agent has active conversations
+      const activeConversations = await db.select({ count: sql<number>`count(*)` })
+        .from(conversations)
+        .where(and(
+          eq(conversations.assignedAgentId, id),
+          eq(conversations.status, "assigned")
+        ));
+      
+      if (activeConversations[0]?.count > 0) {
+        throw new Error("Cannot delete agent with active conversations");
+      }
+      
+      // Unassign agent from closed conversations
+      await db.update(conversations)
+        .set({ assignedAgentId: null })
+        .where(eq(conversations.assignedAgentId, id));
+      
+      // Delete the agent
+      const result = await db.delete(agents).where(eq(agents.id, id));
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("Delete agent error:", error);
+      return false;
+    }
   }
 }
 
