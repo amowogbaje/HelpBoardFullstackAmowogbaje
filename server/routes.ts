@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import express, type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./database-storage";
 import { aiService } from "./ai-service";
@@ -66,6 +66,7 @@ function getClientIP(req: any): string {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
+  app.use(express.json());
   
   // Initialize WebSocket
   initializeWebSocket(httpServer);
