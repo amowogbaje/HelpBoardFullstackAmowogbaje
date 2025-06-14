@@ -263,11 +263,11 @@ run_diagnostics() {
     
     # Summary
     if [ $issues -eq 0 ]; then
-        log_info "🎉 All diagnostics passed! SSL generation should work."
+        log_info "All diagnostics passed! SSL generation should work."
         log_info "Run: sudo ./deploy-single-domain.sh ssl"
         return 0
     else
-        log_error " Found $issues issue(s) that need to be resolved first"
+        log_error "Found $issues issues that need to be resolved first"
         return 1
     fi
 }
