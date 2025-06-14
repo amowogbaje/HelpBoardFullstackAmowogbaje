@@ -13,7 +13,8 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-
+# Install PostgreSQL client
+RUN apk add --no-cache postgresql-client
 # Install all dependencies (including dev dependencies)
 RUN npm ci
 
