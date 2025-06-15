@@ -2,7 +2,6 @@ import express from "express";
 import type { Express } from "express";
 
 import { createServer, type Server } from "http";
-import cors from cors;
 import { storage } from "./database-storage";
 import { aiService } from "./ai-service";
 import { initializeWebSocket, getWebSocketService } from "./websocket";
@@ -70,7 +69,7 @@ function getClientIP(req: any): string {
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   app.use(express.json());
-  app.use(cors());
+  
   
   // Initialize WebSocket
   initializeWebSocket(httpServer);
