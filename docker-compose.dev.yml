@@ -68,7 +68,7 @@ services:
   
   frontend:
     build:
-      context: ./client
+      context: .
       dockerfile: Dockerfile.dev
     restart: always
     depends_on:
