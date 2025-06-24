@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database
   db:
     image: postgres:15-alpine
     restart: always
@@ -20,7 +19,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # Redis for Session Storage
   redis:
     image: redis:7-alpine
     restart: always
@@ -35,11 +33,10 @@ services:
       timeout: 3s
       retries: 5
 
-  # HelpBoard Application (Development Mode)
-  app:
+  backend:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: server/Dockerfile.dev   # ✅ updated
     restart: always
     environment:
       NODE_ENV: development
@@ -48,12 +45,12 @@ services:
       REDIS_URL: redis://default:${REDIS_PASSWORD:-redis_password}@redis:6379
       SESSION_SECRET: ${SESSION_SECRET:-helpboard_session_secret_dev}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
-      CORS_ORIGIN: https://${DOMAIN:-helpboard.selfany.com}
+      CORS_ORIGIN: http://localhost:5173   # ✅ for dev
       TRUST_PROXY: "true"
     ports:
       - "5000:5000"
     volumes:
-      - ./logs:/app/logs
+      - .:/app                              # ✅ added to support hot reload
     depends_on:
       db:
         condition: service_healthy
@@ -65,18 +62,19 @@ services:
       timeout: 10s
       retries: 3
       start_period: 20s
-  
+
   frontend:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: client/Dockerfile.dev    # ✅ updated
     restart: always
-    depends_on:
-      - app
+    ports:
+      - "5173:5173"                         # ✅ exposed Vite dev server port
     volumes:
-      - frontend_build:/app/dist
+      - .:/app                              # ✅ added for hot reload
+    depends_on:
+      - backend
 
-  # Nginx Reverse Proxy
   nginx:
     image: nginx:alpine
     restart: always
@@ -89,7 +87,7 @@ services:
       - ./ssl:/etc/nginx/ssl:ro
       - ./certbot/www:/var/www/certbot:ro
     depends_on:
-      - app
+      - backend
       - frontend
     healthcheck:
       test: ["CMD", "nginx", "-t"]
@@ -97,14 +95,17 @@ services:
       timeout: 10s
       retries: 3
 
-  # Certbot for SSL certificates
   certbot:
     image: certbot/certbot:latest
     profiles: ["ssl-setup"]
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
-    command: certonly --webroot --webroot-path=/var/www/certbot --email admin@${DOMAIN:-helpboard.selfany.com} --agree-tos --no-eff-email -d ${DOMAIN:-helpboard.selfany.com}
+    command: >
+      certonly --webroot --webroot-path=/var/www/certbot
+      --email admin@${DOMAIN:-helpboard.selfany.com}
+      --agree-tos --no-eff-email
+      -d ${DOMAIN:-helpboard.selfany.com}
 
 volumes:
   postgres_data:

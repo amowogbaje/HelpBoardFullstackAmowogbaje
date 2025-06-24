@@ -1,0 +1,21 @@
+# Development Dockerfile for the client (frontend)
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy only client files
+COPY client/package*.json ./
+WORKDIR /app
+RUN npm ci
+
+COPY client ./client
+COPY shared ./shared
+
+# Expose frontend dev server port (default 5173 or Vite config)
+EXPOSE 5173
+
+# Development mode
+ENV NODE_ENV=development
+
+# Start Vite dev server
+CMD ["npm", "run", "dev", "--prefix", "client"]

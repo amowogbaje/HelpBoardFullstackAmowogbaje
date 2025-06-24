@@ -1,0 +1,28 @@
+# Development Dockerfile for the server (backend)
+FROM node:20-alpine
+
+# System deps
+RUN apk add --no-cache \
+  curl \
+  git \
+  postgresql-client
+
+WORKDIR /app
+
+# Copy only server-related files
+COPY package*.json ./
+COPY tsconfig.json ./
+COPY server ./server
+COPY shared ./shared
+
+# Install all dependencies
+RUN npm ci
+
+# Expose backend port
+EXPOSE 5000
+
+# Development mode
+ENV NODE_ENV=development
+
+# Start backend with tsx
+CMD ["npm", "run", "dev"]
