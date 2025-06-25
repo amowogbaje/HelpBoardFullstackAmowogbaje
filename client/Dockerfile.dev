@@ -4,7 +4,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Copy only client files
-COPY client/package*.json ./
+COPY package*.json ./
 WORKDIR /app
 RUN npm ci
 
